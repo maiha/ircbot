@@ -1,5 +1,8 @@
 
 require 'nkf'
+require 'pathname'
+require 'rubygems'
+require 'active_support'
 
 ######################################################################
 ### Load path

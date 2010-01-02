@@ -1,9 +1,12 @@
 # -*- coding: euc-jp -*-
 
 require 'ircbot/agent_manager'
+require 'ircbot/ordered_hash'
 
 module Ircbot
   class ConfigClient < IRC::Client
+    include ActiveSupport::Rescuable
+
     attr :config
     attr :messages
     attr :agents
@@ -81,6 +84,12 @@ module Ircbot
       @messages		= []
 
       @last_ping_time	= nil   # 最後に CMD_PING を受け取った時間
+    end
+
+    def each_agent
+      @agents.each_pair do |name, agent|
+	yield(agent)
+      end
     end
 
     def missing_error (arg)
@@ -188,6 +197,16 @@ module Ircbot
       @message_thread.join
       @log_thread.raise(Stop.new)
       @log_thread.join
+
+    rescue Exception => e
+      begin
+        syslog("catch exception: #{e}(#{e.class})", :error)
+        rescue_with_handler(e) or raise
+      rescue Recover => recover
+        irc.stop
+        sleep recover.wait
+        retry
+      end
     end
 
     def ping_timeout
@@ -224,14 +243,14 @@ module Ircbot
       end
 
       disconnect
-      @message_thread.raise(Stop.new)
+      @message_thread.raise(IRC::Stop.new)
       destroy_message_thread
     end
 
     # derived from original ruby-irc::Client's one.
     def connect 
       @log_queue	= Queue.new
-      @connection	= Connection::new(@log_queue)
+      @connection	= IRC::Connection::new(@log_queue)
 
       @connection.connect(@server, @port.to_s)
       @connection.sendPASS(@password)

@@ -1,4 +1,5 @@
 #!/usr/bin/ruby -Ke
+# -*- coding: euc-jp -*-
 
 require 'parsedate'
 

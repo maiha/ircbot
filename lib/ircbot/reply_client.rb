@@ -12,12 +12,6 @@ module Ircbot
       "(#{ names })"
     end
 
-    def each_agent
-      @agents.each_pair do |name, agent|
-	yield(agent)
-      end
-    end
-
     def speak0 (to, obj, save = nil)
       Thread.critical = true
       message =
@@ -54,23 +48,13 @@ module Ircbot
     end
 
     def newAgent (name)
-      case name
-      when nil, /(\.\.\/|~\/)/
-	err = "invalid agent name (#{$1})"
-	syslog(err, :error)
-	return err
-      end
-
-      filename = "cpi/#{name}.cpi"
-      filename = "#{File::dirname(__FILE__)}/../cpi/#{name}.cpi"
-      unless File.readable_real?(filename)
-	err = "cannot read the file (#{filename})"
-	syslog(err, :error)
-	return err
-      end
-
-      script = File.open(filename).read
+      script = Ircbot.path_for(:cpi, "#{name}.cpi").read{}
       eval(script, TOPLEVEL_BINDING)
+
+    rescue SecurityError => e
+      err = "#{e.class}: #{e}"
+      syslog(err, :error)
+      return err
     end
 
     # xxxAgent: Agent ¤ò xxx ¤¹¤ë

@@ -9,7 +9,7 @@ AUTHOR = "maiha"
 EMAIL = "maiha@wota.jp"
 HOMEPAGE = "http://github.com/maiha/ircbot"
 SUMMARY = "old fashioned irc bot"
-GEM_VERSION = "0.0.1"
+GEM_VERSION = "0.0.2"
 
 spec = Gem::Specification.new do |s|
   s.rubyforge_project = 'asakusarb'
@@ -25,6 +25,7 @@ spec = Gem::Specification.new do |s|
   s.email = EMAIL
   s.homepage = HOMEPAGE
   s.require_path = 'lib'
+  s.add_dependency('activesupport', '>= 2.0.0')
   s.files = %w(MIT-LICENSE README Rakefile) + Dir.glob("{lib,spec,app,public,stubs}/**/*")
 end
 

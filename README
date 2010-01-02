@@ -33,6 +33,13 @@ CPI
   In ircbot's world, we define modules as cpi.
 
 
+
+Notice
+======
+
+  Main code and cpi modules should be euc-japan (KCODE=e).
+
+
 Author
 ======
 
