@@ -1,0 +1,40 @@
+ircbot
+===
+
+  old fashioned irc bot 
+
+
+Config
+======
+
+  Edit "config/xxx.dat" as your environment.
+
+
+Usage
+=====
+
+  ircbot -f config/xxx.dat
+
+
+Command
+=======
+
+  * (nick|realname).COMMAND arg
+     # same as `arg > (nick|realname).COMMAND'
+  * (nick|realname).help
+  * (nick|realname).restart(CPI_NAME = nil)
+  * (nick|realname).register(CPI_NAME)
+  * (nick|realname).remove(CPI_NAME)
+
+
+CPI
+===
+
+  In ircbot's world, we define modules as cpi.
+
+
+Author
+======
+
+  maiha@wota.jp
+

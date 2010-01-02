@@ -1,0 +1,7 @@
+server		= localhost
+port		= 6667
+nick		= nksk
+realname	= nksk bot
+agents          = eval
+help		= nksk bot (2010/01/02)
+channels	= #wota

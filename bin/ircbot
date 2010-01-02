@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+# clear ARGV for Irb
+
+require 'ircbot'
+
+$KCODE = 'e'
+
+if $0 == __FILE__
+  # Sync
+  STDOUT.sync = true
+  STDERR.sync = true
+
+  debug  = nil
+  config = nil
+
+  while (arg = ARGV.shift)
+    case arg
+    when /^-d$/		; debug = true
+    when /^-f$/		; config = ARGV.shift
+    else
+      puts "invalid argument: `#{arg}'"
+      exit
+    end
+  end
+
+  unless config
+    raise "Specify your config file\nusage: #{$0} -f config/xxx.dat"
+  end
+
+  irc = IRC::ReplyClient.read_config(config, debug)
+  begin
+    irc.start
+
+  rescue SocketError
+    irc.stop
+    sleep 1800	# 30min
+    retry
+
+  rescue Errno::EPIPE, Errno::ECONNRESET, Errno::ETIMEDOUT
+    puts "catch exception: #{$!}(#{$!.type})"
+    irc.stop
+    sleep 300	# 5min
+    retry
+
+  rescue IRC::AbnormalTerminated
+    puts "catch exception: #{$!}(#{$!.type})"
+    irc.stop
+    sleep 300	# 5min
+    retry
+
+  rescue Exception => error
+    puts "fatal error: unexpected exception: #{error}(#{error.type})"
+  end
+  puts "finish: loop ends."
+end
