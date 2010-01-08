@@ -1,7 +1,7 @@
 ircbot
-===
+======
 
-  old fashioned irc bot 
+  An irc bot framework that offers easy-to-use by plugins
 
 
 Config
@@ -27,21 +27,17 @@ Command
   * (nick|realname).remove(CPI_NAME)
 
 
-CPI
-===
+Plugins
+=======
 
-  In ircbot's world, we define modules as cpi.
-
-
-
-Notice
-======
-
-  Main code and cpi modules should be euc-japan (KCODE=e).
+  In ircbot world, we define functions as plugin.
 
 
-Author
-======
+Required
+========
 
-  maiha@wota.jp
+  * irc-net gem
 
+
+Authors: maiha@wota.jp
+Links: http://github.com/maiha/ircbot

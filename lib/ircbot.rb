@@ -1,8 +1,6 @@
-
 require 'nkf'
 require 'pathname'
 require 'rubygems'
-require 'active_support'
 
 ######################################################################
 ### Load path
@@ -14,28 +12,19 @@ $LOAD_PATH.unshift __DIR__ unless
   $LOAD_PATH.include?(__DIR__) ||
   $LOAD_PATH.include?(File.expand_path(__DIR__))
 
-require 'ircbot/framework'
-
+require "ircbot/framework"
 
 ######################################################################
 ### IRC library
 
-require 'irc/irc'
-require 'irc/agent'
-require 'irc/client'
-
+require "net/irc"
 
 ######################################################################
-### Ircbot library
+### Core ext
 
-require 'ircbot/core_ext/rand-polimorphism'
-require 'ircbot/core_ext/writefile'
-require 'ircbot/core_ext/digest'
-require 'ircbot/core_ext/irc'
-
+require "ircbot/core_ext/message"
 
 ######################################################################
 ### Ircbot 
 
-require 'ircbot/reply_client'
-
+require "ircbot/client"
