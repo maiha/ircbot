@@ -15,6 +15,7 @@ describe Ircbot::Plugins do
   provide :[]
   provide :<<
   provide :bot
+  provide :load
   provide :start
   provide :stop
   provide :delete

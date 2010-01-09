@@ -27,14 +27,22 @@ module Ircbot
     ######################################################################
     ### Accessors
 
-    def plugin!(name)
-      find_plugin!(name)
+    def find_plugin!(plugin)
+      case plugin
+      when String, Symbol
+        @plugins[plugin.to_s] or raise PluginNotFound, plugin.to_s
+      when Plugin
+        plugin
+      else
+        raise PluginNotFound, "#{plugin.class}(#{plugin})"
+      end
     end
+    alias :plugin! :find_plugin!
+    alias :[]      :find_plugin!
 
     def plugin(name)
-      plugin!(name) rescue nil
+      find_plugin!(name) rescue nil
     end
-    alias :[] :plugin!
 
     def bot
       client
@@ -44,11 +52,11 @@ module Ircbot
     ### Operations
 
     def start(plugin)
-      find_plugin(plugin).running = true
+      find_plugin!(plugin).running = true
     end
 
     def stop(plugin)
-      find_plugin(plugin).running = false
+      find_plugin!(plugin).running = false
     end
 
     def load(plugin)
@@ -57,7 +65,7 @@ module Ircbot
 
     def delete(plugin)
       name = plugin.is_a?(Plugin) ? plugin.name : plugin.to_s
-      plugin!(name)
+      find_plugin!(name)
       @plugins.delete(name)
     end
 
@@ -111,6 +119,7 @@ module Ircbot
     rescue NameError => e
       raise LoadError, "Expected #{path} to define #{class_name} (#{e})"
     end
+    alias :load :load_plugin
 
     def active
       select(&:running)
@@ -121,17 +130,6 @@ module Ircbot
     end
 
     private
-      def find_plugin!(plugin)
-        case plugin
-        when String, Symbol
-          @plugins[plugin.to_s] or raise PluginNotFound, plugin.to_s
-        when Plugin
-          plugin
-        else
-          raise PluginNotFound, "#{plugin.class}(#{plugin})"
-        end
-      end
-
       def broadcast(text)
         p text
       end

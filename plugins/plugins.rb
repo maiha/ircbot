@@ -20,11 +20,11 @@ commands: load, start, stop, delete
 
       case command.to_s
       when "load", "register"
-        plugins << Array(arg.split)
+        plugins.load arg
         throw :halt, "Loaded #{arg}"
 
       when "delete", "remove"
-        plugins.remove arg
+        plugins.delete arg
         throw :halt, "Removed #{arg}"
 
       when "start"
