@@ -18,6 +18,7 @@ require "ircbot/framework"
 require "ircbot/version"
 
 Ircbot.push_path(:plugin, Ircbot.system_root + 'plugins')
+Ircbot.push_path(:config, Ircbot.system_root + 'config')
 Ircbot.toplevel_binding = binding
 
 ######################################################################

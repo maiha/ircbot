@@ -4,19 +4,55 @@ require 'ircbot'
 
 config = nil
 plugin = Pathname(Dir.getwd) + "plugins"
+create = false
 
 while (arg = ARGV.shift)
   case arg
   when /^-f$/		; config = ARGV.shift
-  when /^-c$/		; cpi    = ARGV.shift
+  when /^-c$/		; create = true
   else
     puts "invalid argument: `#{arg}'"
     exit
   end
 end
 
+
+######################################################################
+### Create config file
+
+if create
+  require 'ircbot/client/config/generator'
+  config    = Pathname(config.to_s)
+  nick      = config.basename(".*").to_s
+  generator = Ircbot::Client::Config::Generator.new(:nick => nick)
+
+  if nick.empty?
+    nick   = generator.nick
+    config = Pathname("#{nick}.yml")
+  end
+
+  unless config.extname == ".yml"
+    config = Pathname(config.to_s + ".yml")
+  end
+
+  if config.exist?
+    puts "ERROR: Config file (#{config}) already exists."
+    puts "Delete it first, or specify another filename by -f option."
+    exit
+  end
+
+  config.open("w+") do |f|
+    f.print generator.execute
+  end
+  puts "Created #{config}. Run following command.\nircbot -f #{config}"
+  exit
+end
+
+######################################################################
+### Run bot
+
 unless config
-  raise "Specify your config file\nusage: #{$0} -f config/xxx.dat"
+  raise "Specify your config file\nusage: #{$0} -f xxx.yml"
 end
 
 Ircbot.push_path(:plugin, plugin)
