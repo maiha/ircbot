@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Ircbot
-  class Agent
+  class Plugin
     class ClientNotFound < RuntimeError; end
 
     class Null
@@ -27,12 +27,12 @@ module Ircbot
         @client or raise ClientNotFound
       end
 
-      def agent!(name)
-        client.agent!(name)
+      def plugin!(name)
+        client.plugin!(name)
       end
 
-      def agent(name)
-        agent!(name)
+      def plugin(name)
+        plugin!(name)
       rescue ClientNotFound
         Null.new
       end

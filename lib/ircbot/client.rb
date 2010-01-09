@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-require "ircbot/agent"
-require "ircbot/agent_manager"
+require "ircbot/plugin"
+require "ircbot/plugins"
 
 module Ircbot
   class Client < Net::IRC::Client
@@ -21,5 +21,5 @@ end
 require "ircbot/client/encoding"
 require "ircbot/client/config"
 require "ircbot/client/config/channels"
-require "ircbot/client/agents"
+require "ircbot/client/plugins"
 require "ircbot/client/commands"
