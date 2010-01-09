@@ -16,13 +16,14 @@ while (arg = ARGV.shift)
   end
 end
 
+config = Pathname(config.to_s)
+
 
 ######################################################################
 ### Create config file
 
 if create
   require 'ircbot/client/config/generator'
-  config    = Pathname(config.to_s)
   nick      = config.basename(".*").to_s
   generator = Ircbot::Client::Config::Generator.new(:nick => nick)
 
@@ -51,7 +52,11 @@ end
 ######################################################################
 ### Run bot
 
-unless config
+unless config.extname == ".yml"
+  config = Pathname(config.to_s + ".yml")
+end
+
+unless config.exist?
   raise "Specify your config file\nusage: #{$0} -f xxx.yml"
 end
 
