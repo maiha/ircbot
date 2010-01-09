@@ -4,7 +4,12 @@ module Ircbot
   class Client
     class Config
       def channels
-        Array(super)
+        case (val = super)
+        when Array
+          val
+        else
+          val.to_s.split
+        end
       end
     end
 

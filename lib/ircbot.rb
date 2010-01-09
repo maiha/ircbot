@@ -1,6 +1,7 @@
 require 'nkf'
 require 'pathname'
 require 'rubygems'
+require 'extlib'
 
 ######################################################################
 ### Load path

@@ -8,8 +8,8 @@ GEM_NAME = "ircbot"
 AUTHOR = "maiha"
 EMAIL = "maiha@wota.jp"
 HOMEPAGE = "http://github.com/maiha/ircbot"
-SUMMARY = "old fashioned irc bot"
-GEM_VERSION = "0.0.2"
+SUMMARY = "easy irc bot framework"
+GEM_VERSION = "0.0.3"
 
 spec = Gem::Specification.new do |s|
   s.rubyforge_project = 'asakusarb'
@@ -20,12 +20,12 @@ spec = Gem::Specification.new do |s|
   s.has_rdoc = true
   s.extra_rdoc_files = ["README", "MIT-LICENSE"]
   s.summary = SUMMARY
-  s.description = s.summary
+  s.description = "An irc bot framework that offers easy-to-use by plugins"
   s.author = AUTHOR
   s.email = EMAIL
   s.homepage = HOMEPAGE
   s.require_path = 'lib'
-  s.add_dependency('activesupport', '>= 2.0.0')
+  s.add_dependency('extlib', '>= 0.9.14')
   s.files = %w(MIT-LICENSE README Rakefile) + Dir.glob("{lib,spec,app,public,stubs}/**/*")
 end
 

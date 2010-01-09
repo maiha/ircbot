@@ -1,0 +1,8 @@
+host: localhost
+port: 6667
+nick: sama-zu
+user: samazu
+real: sama~zu
+help: sama-zu bot (2010/01/09)
+channels: "#test"
+plugins: irc

@@ -51,4 +51,33 @@ describe Ircbot::Client do
       end
     end
   end
+
+  ######################################################################
+  ### Initialize from file
+
+  it "should provide .from_file" do
+    Ircbot::Client.should respond_to(:from_file)
+  end
+
+  ######################################################################
+  ### Readers
+
+  describe Ircbot::Client::Config do
+    describe "#read" do
+      it "should delegate to read_yml" do
+#         mock(subject).read_yml(__FILE__)
+#         subject.read(__FILE__)
+      end
+    end
+
+    describe "#read_yml" do
+      it do
+        hash = Ircbot::Client::Config.read(path("sama-zu.yml"))
+        hash.should be_a_kind_of(Mash)
+        hash["nick"].should == "sama-zu"
+        hash[:nick].should == "sama-zu"
+      end
+    end
+  end
+
 end
