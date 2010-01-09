@@ -11,11 +11,12 @@ describe Ircbot::Plugins do
   provide :plugins
   provide :active
   provide :load_plugins
-  provide :load_plugin
+  provide :load
+  provide :plugin!
+  provide :plugin
   provide :[]
   provide :<<
   provide :bot
-  provide :load
   provide :start
   provide :stop
   provide :delete

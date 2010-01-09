@@ -27,7 +27,7 @@ module Ircbot
     ######################################################################
     ### Accessors
 
-    def find_plugin!(plugin)
+    def plugin!(plugin)
       case plugin
       when String, Symbol
         @plugins[plugin.to_s] or raise PluginNotFound, plugin.to_s
@@ -37,11 +37,10 @@ module Ircbot
         raise PluginNotFound, "#{plugin.class}(#{plugin})"
       end
     end
-    alias :plugin! :find_plugin!
-    alias :[]      :find_plugin!
+    alias :[] :plugin!
 
     def plugin(name)
-      find_plugin!(name) rescue nil
+      plugin!(name) rescue nil
     end
 
     def bot
@@ -52,20 +51,16 @@ module Ircbot
     ### Operations
 
     def start(plugin)
-      find_plugin!(plugin).running = true
+      plugin!(plugin).running = true
     end
 
     def stop(plugin)
-      find_plugin!(plugin).running = false
-    end
-
-    def load(plugin)
-      load_plugins(plugin)
+      plugin!(plugin).running = false
     end
 
     def delete(plugin)
       name = plugin.is_a?(Plugin) ? plugin.name : plugin.to_s
-      find_plugin!(name)
+      plugin!(name)
       @plugins.delete(name)
     end
 
@@ -91,7 +86,7 @@ module Ircbot
       when String, Symbol
         begin
           name = plugin.to_s
-          self << load_plugin(name)
+          self << load(name)
         rescue Exception => e
           broadcast "Plugin error(#{name}): #{e}[#{e.class}]"
         end
@@ -102,7 +97,7 @@ module Ircbot
     end
     alias :<< :load_plugins
 
-    def load_plugin(name)
+    def load(name)
       path = Ircbot.glob_for(:plugin, name).first or
         raise PluginNotFound, name.to_s
 
@@ -112,14 +107,9 @@ module Ircbot
       class_name = Extlib::Inflection.camelize(name) + "Plugin"
       return Object.const_get(class_name).new
 
-#       Object.subclasses_of(Plugin).each do |k|
-#         return k.new if Extlib::Inflection.demodulize(k.name) =~ /^#{class_name}(Plugin)?$/
-#       end
-
     rescue NameError => e
       raise LoadError, "Expected #{path} to define #{class_name} (#{e})"
     end
-    alias :load :load_plugin
 
     def active
       select(&:running)
