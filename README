@@ -7,31 +7,49 @@ ircbot
 Config
 ======
 
-  Edit "config/xxx.dat" as your environment.
+  Edit "config/xxx.yml" as your environment.
+
+  * host: irc server host
+  * port: irc server port
+  * nick: nick name for this bot
+  * user: user name for this bot
+  * real: real name for this bot
+  * help: help message for this bot
+  * channels: startup channel names
+  * plugins: plugin names
 
 
 Usage
 =====
 
-  ircbot -f config/xxx.dat
+  ircbot -f config/xxx.yml
 
 
-Command
+Plugin
+======
+
+  In ircbot world, we define functions as plugin (Ircbot::Plugin).
+
+  Instance methods:
+    * reply : this method is called when privmsg event is fired,
+              and reply message(the returned string) to the channel.
+
+    * 
+
+Example
 =======
 
-  * (nick|realname).COMMAND arg
-     # same as `arg > (nick|realname).COMMAND'
-  * (nick|realname).help
-  * (nick|realname).restart(CPI_NAME = nil)
-  * (nick|realname).register(CPI_NAME)
-  * (nick|realname).remove(CPI_NAME)
+  When you want echo bot, define the function as plugin first.
 
+  plugins/echo.rb:
 
-Plugins
-=======
+    class EchoPlugin < Ircbot::Plugin
+      def reply
+        text
+      end
+    end
 
-  In ircbot world, we define functions as plugin.
-
+  
 
 Required
 ========

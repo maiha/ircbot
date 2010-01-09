@@ -15,6 +15,12 @@ module Ircbot
         raise NameError, "undefined local variable or method `#{name}' for #{self}"
       end
     end
+
+    class Standalone < Client
+      def initialize(*)
+        super({})
+      end
+    end
   end
 end
 

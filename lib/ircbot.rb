@@ -23,6 +23,7 @@ require "net/irc"
 ######################################################################
 ### Core ext
 
+require "ircbot/core_ext/delegation" # from activesupport-2.3.5
 require "ircbot/core_ext/message"
 
 ######################################################################

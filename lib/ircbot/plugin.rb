@@ -2,7 +2,7 @@
 
 module Ircbot
   class Plugin
-    class ClientNotFound < RuntimeError; end
+    class NotConnected < RuntimeError; end
 
     class Null
       private
@@ -12,33 +12,43 @@ module Ircbot
     end
 
     attr_accessor :message
-    attr_accessor :args
+    attr_accessor :plugins
 
-    def initialize(*args)
-      @args = args
+    def initialize(plugins = nil)
+      @plugins = plugins || Plugins.new
+      @message = Net::IRC::Message.new(self.class, "PRIVMSG", ["#channel", "(initialize)"])
     end
 
-    def client=(client)
-      @client = client
+    ######################################################################
+    ### Accessors
+
+    delegate :plugin!, :to=>"@plugins"
+
+    def plugin_name
+      @plugin_name ||= Extlib::Inflection.foreign_key(self.class.name).sub(/(_plugin)?_id$/,'')
+    end
+
+    def message
+      @message or raise NotConnected
+    end
+
+    def inspect
+      "<Plugin: %s>" % plugin_name
     end
 
     private
-      def client
-        @client or raise ClientNotFound
-      end
-
       def plugin!(name)
-        client.plugin!(name)
+        @plugins[name] or raise NotConnected
       end
 
       def plugin(name)
         plugin!(name)
-      rescue ClientNotFound
+      rescue NotConnected
         Null.new
       end
 
       def direct?
-        message.channel == client.nick
+        message.channel == plugins.client.config.nick
       end
   end
 end
