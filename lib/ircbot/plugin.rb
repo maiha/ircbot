@@ -5,10 +5,15 @@ module Ircbot
     class NotConnected < RuntimeError; end
 
     class Null
-      private
-        def method_missing(*)
-          self
-        end
+      def method_missing(*)
+        self
+      end
+    end
+
+    class InitialMessage < Net::IRC::Message
+      def initialize(nick = nil)
+        super nick, "PRIVMSG", ["#channel", "(initialize)"]
+      end
     end
 
     attr_accessor :message
@@ -16,7 +21,7 @@ module Ircbot
 
     def initialize(plugins = nil)
       @plugins = plugins || Plugins.new
-      @message = Net::IRC::Message.new(self.class, "PRIVMSG", ["#channel", "(initialize)"])
+      @message = InitialMessage.new(self.class.name)
     end
 
     ######################################################################
@@ -26,10 +31,6 @@ module Ircbot
 
     def plugin_name
       @plugin_name ||= Extlib::Inflection.foreign_key(self.class.name).sub(/(_plugin)?_id$/,'')
-    end
-
-    def message
-      @message or raise NotConnected
     end
 
     def inspect

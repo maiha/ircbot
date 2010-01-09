@@ -7,9 +7,9 @@ module Ircbot
     attr_reader :plugins
     attr_reader :client
 
-    def initialize(client = nil)
-      @client  = client || Client::Standalone.new
-      @plugins = []
+    def initialize(client = nil, plugins = nil)
+      @client  = client  || Client::Standalone.new
+      @plugins = plugins || []
     end
 
     def each(&block)
@@ -17,7 +17,7 @@ module Ircbot
     end
 
     def [](key)
-      plugins.find{|plugin| plugin.plugin_name == key.to_s}
+      find{|plugin| plugin.plugin_name == key.to_s}
     end
 
     def <<(plugin)
@@ -31,8 +31,8 @@ module Ircbot
         else
           raise ArgumentError, "#{plugin} is not Ircbot::Plugin"
         end
-      when String, Symbol
-        raise NotImplementedError, "#<<"
+      else
+        raise NotImplementedError, "#<< for #{plugin.class}"
       end
       return self
     end

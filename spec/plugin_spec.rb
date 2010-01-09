@@ -36,6 +36,9 @@ describe Ircbot::Plugin do
     it { BarPlugin.new.plugin_name.should == "bar" }
   end
 
+  provide :message
+  its(:message) { should be_kind_of(Ircbot::Plugin::InitialMessage) }
+
   ######################################################################
   ### private methods
 
@@ -43,7 +46,6 @@ describe Ircbot::Plugin do
   provide :plugin!
   provide :plugins
   provide :direct?
-
 
   ######################################################################
   ### Not connected
