@@ -7,9 +7,11 @@ require 'rake/gempackagetask'
 GEM_NAME = "ircbot"
 AUTHOR = "maiha"
 EMAIL = "maiha@wota.jp"
-HOMEPAGE = "http://github.com/maiha/ircbot"
 SUMMARY = "easy irc bot framework"
-GEM_VERSION = "0.0.3"
+
+require File.dirname(__FILE__) + '/lib/ircbot/version'
+GEM_VERSION = Ircbot::VERSION
+HOMEPAGE    = Ircbot::HOMEPAGE
 
 spec = Gem::Specification.new do |s|
   s.rubyforge_project = 'asakusarb'
@@ -26,7 +28,8 @@ spec = Gem::Specification.new do |s|
   s.homepage = HOMEPAGE
   s.require_path = 'lib'
   s.add_dependency('extlib', '>= 0.9.14')
-  s.files = %w(MIT-LICENSE README Rakefile) + Dir.glob("{lib,spec,app,public,stubs}/**/*")
+  s.add_dependency('net-irc', '>= 0.0.9')
+  s.files = %w(MIT-LICENSE README Rakefile) + Dir.glob("{lib,spec,plugins}/**/*")
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|

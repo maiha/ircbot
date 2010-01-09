@@ -33,8 +33,16 @@ Plugin
   Instance methods:
     * reply : this method is called when privmsg event is fired,
               and reply message(the returned string) to the channel.
+        args: [text, nick, message object]
 
-    * 
+    * help  : used from "plugins" plugin
+
+  Accessor methods:
+
+    * message : message object same as 3rd argument
+    * direct? : whether the message is directly toward to the bot or not
+    * config  : hash of given config file
+
 
 Example
 =======
@@ -44,7 +52,7 @@ Example
   plugins/echo.rb:
 
     class EchoPlugin < Ircbot::Plugin
-      def reply
+      def reply(text)
         text
       end
     end

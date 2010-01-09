@@ -6,17 +6,11 @@ module Ircbot
     ### Accessors
 
     def plugins
-      @plugins ||= Plugins.new(self)
+      @plugins ||= Plugins.new(self, config.plugins)
     end
 
-    def plugin!(name)
-      pattern = (name.is_a?(Regexp) ? name : /^#{Regexp.escape(name.to_s)}$/)
-      name = name.to_s
-      plugins.each do |cpi|
-        return cpi if pattern === cpi.class.name
-      end
-      raise "PluginNotFound: #{name}"
-    end
+    delegate :plugin!, :plugin, :to=>"plugins"
+
 
     ######################################################################
     ### Events
@@ -27,33 +21,36 @@ module Ircbot
       text = decode(m.params[1].to_s)
       args = [text, m.prefix.nick, m]
 
-      plugins_call_replies(args)
-      plugins_call_logs(args)
+      plugins_call_replies(args, m)
     end
 
     private
-      def plugins_call_replies(args)
-        catch(:halt) do
-          plugins.each do |plugin|
-            plugins_call_action(:reply, plugin, args, :reply=>true)
+      def plugins_call_replies(args, m)
+        text = catch(:halt) do
+          plugins.active.each do |plugin|
+            plugins_call_action(:reply, plugin, args, m, :reply=>true)
           end
+          return true
         end
+        m.reply(self, text) if text
       end
 
       def plugins_call_logs(args)        
-        plugins.each do |plugin|
+        raise NotImplementedError, "obsoleted"
+        plugins.active.each do |plugin|
           plugins_call_action(:log, plugin, args)
         end
       end
 
-      def plugins_call_action(type, plugin, args, opts = {})
-        plugin.message = args.last
+      def plugins_call_action(type, plugin, args, m, opts = {})
+        plugin.message = m
         arity = plugin.method(type).arity rescue return
         reply = plugin.__send__(type, *args[0,arity])
-        plugin.message.reply(@client, reply) if opts[:reply]
+        m.reply(self, reply) if opts[:reply]
       rescue Exception => e
-        plugin.message.reply(@client, "ERROR: #{e.message}")
-        rescue_action type, plugin, e
+        type = (e.class == RuntimeError) ? 'Error' : "#{e.class}"
+        m.reply(self, "#{type}: #{e.message}")
+        plugins_rescue_action type, plugin, e
       end
 
       def plugins_rescue_action(type, plugin, e)

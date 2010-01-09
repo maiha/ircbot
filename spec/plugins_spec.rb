@@ -3,10 +3,21 @@
 require File.join(File.dirname(__FILE__), 'spec_helper.rb')
 
 describe Ircbot::Plugins do
+
+  ######################################################################
+  ### accessor methods
+
   provide :client
   provide :plugins
+  provide :active
+  provide :load_plugins
+  provide :load_plugin
   provide :[]
   provide :<<
+  provide :bot
+  provide :start
+  provide :stop
+  provide :delete
 
   ######################################################################
   ### Enumerable
@@ -15,4 +26,5 @@ describe Ircbot::Plugins do
   it "should be enumerable" do
     subject.class.ancestors.should include(Enumerable)
   end
+
 end

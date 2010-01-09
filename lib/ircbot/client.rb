@@ -25,7 +25,8 @@ module Ircbot
 end
 
 require "ircbot/client/encoding"
+require "ircbot/client/commands"
 require "ircbot/client/config"
 require "ircbot/client/config/channels"
+require "ircbot/client/config/plugins"
 require "ircbot/client/plugins"
-require "ircbot/client/commands"

@@ -2,21 +2,6 @@
 
 require File.join(File.dirname(__FILE__), 'spec_helper.rb')
 
-module Spec
-  module Example
-    module Subject
-      module ExampleGroupMethods
-        def its(*args, &block)
-          describe(args.first) do
-            define_method(:subject) { super().send(*args) }
-            it(&block)
-          end
-        end
-      end
-    end
-  end
-end
-
 describe Ircbot::Plugin do
   class Foo       < Ircbot::Plugin; end
   class Bar       < Ircbot::Plugin; end
@@ -39,12 +24,17 @@ describe Ircbot::Plugin do
   provide :message
   its(:message) { should be_kind_of(Ircbot::Plugin::InitialMessage) }
 
+  provide :plugins
+  provide :running
+  provide :config
+  provide :client
+  provide :bot
+
   ######################################################################
   ### private methods
 
   provide :plugin
   provide :plugin!
-  provide :plugins
   provide :direct?
 
   ######################################################################
@@ -54,7 +44,7 @@ describe Ircbot::Plugin do
     subject{ Ircbot::Plugin.new }
 
     its(:plugin , :foo) { should be_kind_of(Ircbot::Plugin::Null) }
-    its(:plugin!, :foo) { lambda {subject}.should raise_error(Ircbot::Plugin::NotConnected) }
+    its(:plugin!, :foo) { lambda {subject}.should raise_error(Ircbot::PluginNotFound) }
     its(:direct?      ) { should == false }
   end
 

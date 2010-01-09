@@ -2,13 +2,11 @@
 
 require 'ircbot'
 
-debug  = nil
 config = nil
-cpi    = Pathname(Dir.getwd) + "cpi"
+plugin = Pathname(Dir.getwd) + "plugins"
 
 while (arg = ARGV.shift)
   case arg
-  when /^-d$/		; debug  = true
   when /^-f$/		; config = ARGV.shift
   when /^-c$/		; cpi    = ARGV.shift
   else
@@ -20,6 +18,8 @@ end
 unless config
   raise "Specify your config file\nusage: #{$0} -f config/xxx.dat"
 end
+
+Ircbot.push_path(:plugin, plugin)
 
 irc = Ircbot::Client.from_file(config)
 irc.start
