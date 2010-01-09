@@ -83,9 +83,7 @@ module Ircbot
       when String, Symbol
         begin
           name = plugin.to_s
-          unless @plugins[name]
-            self << load_plugin(name)
-          end
+          self << load_plugin(name)
         rescue Exception => e
           broadcast "Plugin error(#{name}): #{e}[#{e.class}]"
         end

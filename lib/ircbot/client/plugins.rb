@@ -49,7 +49,8 @@ module Ircbot
         m.reply(self, reply) if opts[:reply]
       rescue Exception => e
         type = (e.class == RuntimeError) ? 'Error' : "#{e.class}"
-        m.reply(self, "#{type}: #{e.message}")
+        text = (type == e.message) ? '' : e.message
+        m.reply(self, "#{type}: #{text}")
         plugins_rescue_action type, plugin, e
       end
 

@@ -4,6 +4,13 @@ require 'rubygems'
 require 'ircbot'
 
 class IrcPlugin < Ircbot::Plugin
+  def help
+    <<-EOF
+[Irc plugin] make bot send irc native commands
+ex) send "!JOIN #test" message to #{config.nick}
+    EOF
+  end
+
   def reply(text)
     if direct?
       if text[0] == ?!

@@ -3,9 +3,9 @@
 
 require 'rubygems'
 require 'ircbot'
+require 'chawan'
 
 class WhichPlugin < Ircbot::Plugin
-  require 'chawan'
   def reply(text)
     case text
     when /どっち.*(？|\?)/
@@ -15,10 +15,13 @@ class WhichPlugin < Ircbot::Plugin
     else
       return nil
     end
+  rescue Chawan::CannotAnalyze
+    return nil
   end
 end
 
 if $0 == __FILE__
   plugin = WhichPlugin.new
   puts plugin.reply("AKBとハロはどっちがいい？")
+  puts plugin.reply("どっち？")
 end
