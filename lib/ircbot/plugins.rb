@@ -6,7 +6,7 @@ module Ircbot
   class Plugins
     attr_reader :plugins
     attr_reader :client
-    delegate :config, :to=>"client"
+    delegate :config, :debug, :to=>"client"
 
     def initialize(client = nil, plugins = nil)
       @client  = client  || Client::Standalone.new

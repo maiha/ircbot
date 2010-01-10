@@ -29,6 +29,7 @@ module Ircbot
     ### Accessors
 
     delegate :plugin!, :client, :bot, :config, :to=>"@plugins"
+    delegate :debug, :to=>"@plugins"
 
     def plugin_name
       @plugin_name ||= Extlib::Inflection.foreign_key(self.class.name).sub(/(_plugin)?_id$/,'')

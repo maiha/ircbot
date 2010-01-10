@@ -24,6 +24,7 @@ module Ircbot
   end
 end
 
+require "ircbot/client/logger"
 require "ircbot/client/encoding"
 require "ircbot/client/commands"
 require "ircbot/client/config"
