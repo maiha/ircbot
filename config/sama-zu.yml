@@ -6,3 +6,4 @@ real: sama~zu
 channels: "#test"
 plugins: irc plugins
 multiline: true
+timeout: 500

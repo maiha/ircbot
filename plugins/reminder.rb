@@ -4,7 +4,7 @@
 ######################################################################
 # [Install]
 #
-# gem install chawan dm-core dm-migrations dm-timestamps do_sqlite3 data_objects
+# gem install chawan night-time dm-core dm-migrations dm-timestamps do_sqlite3 data_objects
 #
 
 require 'rubygems'
