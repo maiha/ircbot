@@ -62,6 +62,9 @@ end
 
 Ircbot.push_path(:plugin, plugin)
 
+STDOUT.sync = true
+STDERR.sync = true
+
 irc = Ircbot::Client.from_file(config)
 irc.start
 puts "Bye"
