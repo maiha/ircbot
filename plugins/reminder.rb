@@ -10,7 +10,7 @@
 require 'rubygems'
 require 'ircbot'
 require 'chawan'
-require 'parsedate'
+require 'night-time'
 
 require 'dm-core'
 require 'dm-migrations'
@@ -28,19 +28,37 @@ end
 
 module Reminder
   def self.connect(path = nil)
-    path = Pathname(path || Ircbot.root + "db" + "reminder.db").expand_path
-    path.parent.mkpath
-    DataMapper.setup(:default, "sqlite3://#{path}")
-    Reminder::Event.auto_upgrade!
+    @connecteds ||= {}
+    @connecteds[path] ||=
+      (
+       path = Pathname(path || Ircbot.root + "db" + "reminder.db").expand_path
+       path.parent.mkpath
+       DataMapper.setup(:default, "sqlite3://#{path}")
+       Reminder::Event.auto_upgrade!
+       )
   end
 
   class EventNotFound < RuntimeError; end
+  class EventNotSaved < RuntimeError
+    attr_accessor :event
+    def initialize(event)
+      @event = event
+    end
+  end
+  class EventHasDone  < EventNotSaved; end
+  class StartNotFound < EventNotSaved; end
 
   class Event
     include DataMapper::Resource
 
-    def self.default_storage_name
-      "event"
+    class << self
+      def default_storage_name
+        "event"
+      end
+
+      def reminders
+        all(:alerted=>false, :alert_at.lt=>Time.now, :order=>[:alert_at])
+      end
     end
 
     property :id       , Serial
@@ -57,59 +75,46 @@ module Reminder
       self.alerted = true
       save
     end
+
+    def to_s
+      desc.to_s
+    end
   end
 
   module TimeParser
-    def normalize(hour, min, sec)
-      extra = 0
-      hour ||= 0
-      min  ||= 0
-      sec  ||= 0
-
-      squeeze = lambda{|val, max, unit, extra|
-        num, new_val = val.divmod(max)
-        [new_val, extra + max*num*unit]
-      }
-
-      sec , extra = squeeze.call(sec , 60, 1    , extra)
-      min , extra = squeeze.call(min , 60, 60   , extra)
-      hour, extra = squeeze.call(hour, 24, 60*60, extra)
-
-      return [hour, min, sec, extra]
-    end
-
     def parse(text)
       event = Event.new
       event.desc   = text
       event.title  = text.sub(%r{^[\s\d:-]+}, '')
       event.allday = false
 
-      array = ParseDate.parsedate(text)
-      year  = array[0].to_i
-      mon   = array[1].to_i
-      day   = array[2].to_i
-      hour  = array[3]
-      min   = array[4]
-      sec   = array[5]
-      tzone = array[6].to_s
+      t = Date._parse(text)
+      # => {:zone=>"-14:55", :year=>2010, :hour=>13, :min=>30, :mday=>4, :offset=>-53700, :mon=>1}
 
-      if hour
-        array = normalize(hour, min, sec)
-        event.st = Time.mktime(year, mon, day, *array[0,3]) + array.last
-
-        if tzone =~ /^-?(\d+):(\d+)(:(\d+))?$/
-          array = normalize($1.to_i,$2.to_i,$4.to_i)
-          event.en = Time.mktime(year, mon, day, *array[0,3]) + array.last
+      if t[:year] && t[:mon] && t[:mday] && t[:hour]
+        event.st = Time.mktime(t[:year], t[:mon], t[:mday], t[:hour], t[:min], t[:sec])
+        if t[:zone].to_s =~ /^-?(\d+):(\d+)(:(\d+))?$/
+          event.en = Time.mktime(t[:year], t[:mon], t[:mday], $1, $2, $4)
         end
       else
         event.allday = true
-        event.st     = Time.mktime(year,mon,day)
+        event.st     = Time.mktime(t[:year], t[:mon], t[:mday]) rescue nil
       end
 
       return event
+    end
 
-    rescue Exception => e
-      raise EventNotFound, e.to_s
+    def register(text)
+      connect
+      event = parse(text)
+      event.st or raise StartNotFound, event
+      if event.st.to_time > Time.now
+        event.alert_at = Time.at(event.st.to_time.to_i - 30*60)
+        event.save or raise EventNotSaved, event
+        return event
+      else
+        raise EventHasDone, event
+      end
     end
   end
 
@@ -119,63 +124,58 @@ end
 
 class ReminderPlugin < Ircbot::Plugin
   class EventWatcher
+    attr_accessor :interval
+    attr_accessor :callback
+
     def initialize(options = {})
       @interval = options[:interval] || 60
-      @calback  = options[:callback]
+      @callback = options[:callback] || proc{|e| puts e}
     end
 
     def start
       loop do
-        if @callback
-          events = Reminder::Event.all(:alerted=>false, :alert_at.lt=>Time.now, :order=>[:alert_at])
-          debug "#{self.class} found #{events.size} events"
+        if callback
+          events = Reminder::Event.reminders
+          #debug "#{self.class} found #{events.size} events"
           events.each do |event|
-            @callback.call(event)
+            callback.call(event)
             event.done!
           end
         end
-        sleep @interval
+        sleep interval
       end
     end
   end
 
   def reply(text)
-    ensure_connection
-    start_event_watcher
+    start_reminder
 
     case text
     when %r{^\d{4}.?\d{1,2}.?\d{1,2}}
-      event = Reminder.parse(text)
-      if event.st.to_time > Time.now
-        event.alert_at = Time.at(event.st.to_time.to_i - 30*60)
-        event.save or raise "CannotSaveEvent"
-        return "Remind you again at %s" % event.alert_at.strftime("%Y-%m-%d %H:%M")
-      else
-        debug "Reminder ignores past event: #{event.st}"
-      end
+      event = Reminder.register(text)
+      return "Remind you again at %s" % event.alert_at.strftime("%Y-%m-%d %H:%M")
     end
-
     return nil
 
   rescue Reminder::EventNotFound
     return nil
+
+  rescue Reminder::StartNotFound => e
+    return "Reminder cannot detect start: #{e.event.st}"
+
+  rescue Reminder::EventHasDone => e
+    puts "Reminder ignores past event: #{e.event.st}"
+    return nil
   end
 
   private
-    def ensure_connection
-      @ensure_connection ||= Reminder.connect
-    end
-
-    def start_event_watcher
-      unless @event_watcher_thread
-        broadcast = proc{|event|
-          bot.broadcast event.desc
-        }
-        @event_watcher = EventWatcher.new(:interval=>60, :callback=>broadcast)
-        @event_watcher_thread = Thread.new {
-          @event_watcher.start
-        }
-      end
+    def start_reminder(&callback)
+      bot = self.bot
+      callback ||= proc{|event| bot.broadcast event.to_s}
+      @event_watcher_thread ||=
+        (Reminder.connect
+         reminder = EventWatcher.new(:interval=>60, :callback=>callback)
+         Thread.new { reminder.start })
     end
 end
 
@@ -235,7 +235,6 @@ describe "Reminder#parse" do
   parse '' do
     its(:st)     { should == nil }
   end
-
 
   parse '2010-01-04 CX' do
     its(:st)     { should == "2010-01-04 00:00:00" }
