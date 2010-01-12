@@ -20,13 +20,11 @@ module Ircbot
     ######################################################################
     ### Event
 
-    def on_rpl_welcome(m)
-      super
-
+    event(:rpl_welcome) {
       config.channels.each do |channel|
         post JOIN, channel
       end
-    end
+    }
 
     ######################################################################
     ### Command

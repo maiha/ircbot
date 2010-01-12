@@ -2,35 +2,20 @@
 
 module Ircbot
   class Client
-    module Timeout
-      ######################################################################
-      ### Event
+    ######################################################################
+    ### Event
 
-      def on_ping(m)
-        super
-
-        if config.timeout
-          kill_myself_after(config.timeout.to_i)
-        end
+    event :ping {
+      if (sec = config.timeout.to_i) > 0
+        @kill_myself_at.kill if @kill_myself_at.is_a?(Thread)
+        @kill_myself_at = Thread.new { sleep sec; timeouted }
       end
-
-      private
-        def kill_myself_after(sec)
-          if @kill_myself_at.is_a?(Thread)
-            @kill_myself_at.kill
-          end
-          @kill_myself_at = Thread.new {
-            sleep sec
-            $stderr.puts "No new pings for #{sec}sec."
-            timeouted
-          }
-        end
-
-        def timeouted
-          exit
-        end
     end
 
-    include Timeout
+    private
+      def timeouted
+        $stderr.puts "No new pings for #{config.timeout}sec."
+        exit
+      end
   end
 end

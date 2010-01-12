@@ -15,14 +15,12 @@ module Ircbot
     ######################################################################
     ### Events
 
-    def on_privmsg(m)
-      super
-
+    event(:privmsg) {|m|
       text = decode(m.params[1].to_s)
       args = [text, m.prefix.nick, m]
 
       plugins_call_replies(args, m)
-    end
+    }
 
     private
       def plugins_call_replies(args, m)
