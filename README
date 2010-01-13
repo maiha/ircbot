@@ -17,6 +17,7 @@ Config
   * help: help message for this bot
   * channels: startup channel names
   * plugins: plugin names
+  * timeout: bot will exit when no new pings come for this sec
 
 
 Usage
