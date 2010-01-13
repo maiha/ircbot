@@ -16,16 +16,6 @@ require 'dm-core'
 require 'dm-migrations'
 require 'dm-timestamps'
 
-class Time
-  def midnight?
-    hour == 0 and min == 0 and sec == 0
-  end
-
-  def just?
-    min == 0 and sec == 0
-  end
-end
-
 module Reminder
   def self.connect(path = nil)
     @connecteds ||= {}
