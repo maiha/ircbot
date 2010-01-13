@@ -28,6 +28,9 @@ module Reminder
        )
   end
 
+  ######################################################################
+  ### Exceptions
+
   class EventNotFound < RuntimeError; end
   class EventNotSaved < RuntimeError
     attr_accessor :event
@@ -38,8 +41,24 @@ module Reminder
   class EventHasDone  < EventNotSaved; end
   class StartNotFound < EventNotSaved; end
 
+  ######################################################################
+  ### Event
+
   class Event
     include DataMapper::Resource
+
+    property :id       , Serial
+    property :st       , DateTime                   # 開始日時
+    property :en       , DateTime                   # 終了日時
+    property :title    , String                     # 件名
+    property :desc     , String                     # 詳細
+    property :where    , String                     # 場所
+    property :allday   , Boolean , :default=>false  # 終日フラグ
+    property :alerted  , Boolean , :default=>false  # お知らせ済
+    property :alert_at , DateTime                   # お知らせ日時
+
+    ######################################################################
+    ### Class methods
 
     class << self
       def default_storage_name
@@ -51,15 +70,8 @@ module Reminder
       end
     end
 
-    property :id       , Serial
-    property :st       , DateTime                   # 開始日時
-    property :en       , DateTime                   # 終了日時
-    property :title    , String                     # 件名
-    property :desc     , String                     # 詳細
-    property :where    , String                     # 場所
-    property :allday   , Boolean , :default=>false  # 終日フラグ
-    property :alert_at , DateTime                   # お知らせ日時
-    property :alerted  , Boolean , :default=>false  # お知らせ済
+    ######################################################################
+    ### Instance methods
 
     def done!
       self.alerted = true
