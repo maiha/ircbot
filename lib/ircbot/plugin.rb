@@ -60,5 +60,9 @@ module Ircbot
       def direct?
         message.channel == config.nick
       end
+
+      def nick
+        message.prefix.nick
+      end
   end
 end

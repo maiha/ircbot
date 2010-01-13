@@ -36,6 +36,7 @@ describe Ircbot::Plugin do
   provide :plugin
   provide :plugin!
   provide :direct?
+  provide :nick
 
   ######################################################################
   ### Not connected

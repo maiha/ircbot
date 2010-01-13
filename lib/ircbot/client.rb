@@ -3,16 +3,11 @@
 require "ircbot/plugin"
 require "ircbot/plugins"
 
-module Ircbot
-  class Client < Net::IRC::Client
-    class Standalone < Client
-      def initialize(*)
-        super({})
-      end
-    end
-  end
-end
+######################################################################
+### Irctob::Client
 
+require "ircbot/client/core"
+require "ircbot/client/standalone"
 require "ircbot/client/eventable"
 require "ircbot/client/logger"
 require "ircbot/client/encoding"
