@@ -27,16 +27,20 @@ module Ircbot
       ######################################################################
       ### Config
       def initialize(obj)
-        @obj = obj
+        @obj = Mash.new(obj)
       end
 
       def [](key)
-        __send__(key)
+        @obj[key]
       end
 
       private
-        def method_missing(*args)
-          @obj.__send__(*args)
+        def method_missing(name, *args)
+          if args.empty?
+            self[name]
+          else
+            super
+          end
         end
     end
     
@@ -46,10 +50,9 @@ module Ircbot
 
     def initialize(hash)
       super(hash[:host], hash[:port], hash)
+      @config = Config.new(hash)
     end
 
-    def config
-      @config ||= Config.new(opts)
-    end
+    attr_reader :config
   end
 end

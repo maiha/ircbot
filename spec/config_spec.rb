@@ -33,6 +33,7 @@ describe Ircbot::Client do
     its(:real) { should == "sama~zu" }
     its(:host) { should == "localhost" }
     its(:port) { should == "6667" }
+    its(:unknown_key) { should == nil } # should not raise error
 
     describe "#channels" do
       it "should return the array when an array is given" do
