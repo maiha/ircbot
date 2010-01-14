@@ -12,10 +12,21 @@ module Ircbot
       end
     }
 
+    class Timeouted < RuntimeError; end
+
+    def start
+      super
+    rescue Exception => e
+      sec = [config.wait_before_restart.to_i, 10].max
+      sleep sec
+      $stderr.puts "Restarting after timeouted"
+      retry
+    end
+
     private
       def timeouted
         $stderr.puts "No new pings for #{config.timeout}sec."
-        exit
+        raise Timeouted
       end
   end
 end
