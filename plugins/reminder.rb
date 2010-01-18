@@ -21,7 +21,7 @@ module Reminder
     @connecteds ||= {}
     @connecteds[path] ||=
       (
-       path = Pathname(path || Ircbot.root + "db" + "reminder.db").expand_path
+       path = Pathname(path || Pathname(Dir.getwd) + "db" + "reminder.db").expand_path
        path.parent.mkpath
        DataMapper.setup(:default, "sqlite3://#{path}")
        Reminder::Event.auto_upgrade!
@@ -107,7 +107,6 @@ module Reminder
     end
 
     def register(text)
-      connect
       event = parse(text)
       event.st or raise StartNotFound, event
       if event.st.to_time > Time.now
@@ -175,9 +174,17 @@ class ReminderPlugin < Ircbot::Plugin
       bot = self.bot
       callback ||= proc{|event| bot.broadcast event.to_s}
       @event_watcher_thread ||=
-        (Reminder.connect
+        (connect
          reminder = EventWatcher.new(:interval=>60, :callback=>callback)
          Thread.new { reminder.start })
+    end
+
+    def reminder_db_path
+      Ircbot.root + "db" + "reminder-#{config.nick}.db"
+    end
+
+    def connect
+      @connect ||= Reminder.connect(reminder_db_path)
     end
 end
 
@@ -256,6 +263,13 @@ describe "Reminder#parse" do
     its(:st)     { should == "2010-01-04 13:30:00" }
     its(:en)     { should == "2010-01-04 14:55:00" }
     its(:title)  { should == "CX" }
+    its(:allday) { should == false }
+  end
+
+  parse '2010-01-18 27:15-27:45 TX' do
+    its(:st)     { should == "2010-01-19 03:15:00" }
+    its(:en)     { should == "2010-01-19 03:45:00" }
+    its(:title)  { should == "TX" }
     its(:allday) { should == false }
   end
 end
