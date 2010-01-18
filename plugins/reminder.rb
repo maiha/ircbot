@@ -154,7 +154,8 @@ class ReminderPlugin < Ircbot::Plugin
     case text
     when %r{^\d{4}.?\d{1,2}.?\d{1,2}}
       event = Reminder.register(text)
-      return "Remind you again at %s" % event.alert_at.strftime("%Y-%m-%d %H:%M")
+      text  = "Remind you again at %s" % event.alert_at.strftime("%Y-%m-%d %H:%M")
+      throw :done, text
     end
     return nil
 

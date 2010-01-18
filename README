@@ -58,7 +58,30 @@ Example
       end
     end
 
-  
+
+Advanced
+========
+
+  Messages are passed into plugins automatically.
+  If you don't want this plugin chain, throw :done will help you.  
+
+    config:
+      plugins: a b
+
+    class APlugin < Ircbot::Plugin
+      def reply(text)
+        throw :done, "This is A"
+      end
+    end
+
+    class BPlugin < Ircbot::Plugin
+      def reply(text)
+        "This is B"
+      end
+    end
+
+  BPlugin#reply will be never invoked.
+
 
 Required
 ========

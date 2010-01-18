@@ -24,7 +24,7 @@ module Ircbot
 
     private
       def plugins_call_replies(args, m)
-        text = catch(:halt) do
+        text = catch(:done) do
           plugins.active.each do |plugin|
             plugins_call_action(:reply, plugin, args, m, :reply=>true)
           end
