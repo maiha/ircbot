@@ -13,9 +13,9 @@ class YouTubeContentParser
   attr_reader :video_id
 
   def initialize(html)
-    @html = html
-    extract_header(:t)
-    extract_header(:video_id)
+    @html     = html
+    @t        = extract_header(:t)
+    @video_id = extract_header(:video_id)
   end
 
   def get_video
@@ -27,24 +27,22 @@ class YouTubeContentParser
       @doc ||= Nokogiri::HTML(@html)
     end
 
-    def extract_header(key, opts = {})
-      from  = opts[:from] || key
-      regex = /"#{from}":\s*"(.*?)"/
+    def extract_header(key)
+      regex = /"#{key}":\s*"(.*?)"/
       array = @html.scan(regex).flatten
       case array.size
       when 0
-        # error
+        raise CannotParse, key.to_s
       when 1
-        instance_eval("@#{key} = array.first")
+        array.first
       else
         # video_id is ambigous. so strictly parse html with Nokogiri
         doc.xpath('//head/script').each do |e|
-          value = e.html.scan(regex).flatten.first
-          instance_eval("@#{key} ||= value") and break
+          value = e.html.scan(regex).flatten.first and
+            return value
         end
+        raise CannotParse, key.to_s
       end
-
-      raise CannotParse, key.to_s unless instance_variable_get("@#{key}")
     end
 end
 
