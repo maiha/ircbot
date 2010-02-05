@@ -29,6 +29,7 @@ spec = Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.add_dependency('extlib', '>= 0.9.14')
   s.add_dependency('net-irc', '>= 0.0.9')
+  s.add_dependency('dsl_accessor', '>= 0.4.0')
   s.files = %w(MIT-LICENSE README Rakefile) + Dir.glob("{lib,spec,plugins,config}/**/*")
 end
 

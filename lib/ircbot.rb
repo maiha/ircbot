@@ -3,6 +3,7 @@ require 'pathname'
 require 'rubygems'
 require 'extlib'
 require 'extlib/dictionary'
+require 'dsl_accessor'
 
 ######################################################################
 ### Load path
