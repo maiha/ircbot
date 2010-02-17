@@ -24,7 +24,7 @@ class YoutubePlugin < Ircbot::Plugin
       http = Net::HTTP.new('localhost', 9111)
 #      http = Net::HTTP.new('localhost', 3058)
       tags = nick.to_s.gsub(/[0-9_]/,'')
-      response = http.post('/request', "url=#{url}&tags=#{tags}")
+      response = http.post('/request', "url=#{escaped}&tags=#{tags}")
       summary  = response.body.to_s.split(/\n/).first
       case response.code
       when '200'
