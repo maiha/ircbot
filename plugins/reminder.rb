@@ -151,6 +151,9 @@ class ReminderPlugin < Ircbot::Plugin
   def reply(text)
     start_reminder
 
+    # strip noise
+    text = text.sub(/^<.*?>/,'').strip
+
     case text
     when %r{^\d{4}.?\d{1,2}.?\d{1,2}}
       event = Reminder.register(text)
