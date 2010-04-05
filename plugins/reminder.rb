@@ -21,7 +21,8 @@ module Reminder
     @connecteds ||= {}
     @connecteds[path] ||=
       (
-       path = Pathname(path || Pathname(Dir.getwd) + "db" + "reminder.db").expand_path
+       path ||= Pathname(Dir.getwd) + "db" + "reminder.db"
+       path = Pathname(path).expand_path
        path.parent.mkpath
        DataMapper.setup(:default, "sqlite3://#{path}")
        Reminder::Event.auto_upgrade!
