@@ -4,7 +4,7 @@
 ######################################################################
 # [Install]
 #
-# gem install chawan night-time dm-core dm-migrations dm-timestamps do_sqlite3 data_objects
+# gem install chawan night-time dm-core dm-migrations dm-timestamps do_sqlite3 data_objects dm-sqlite-adapter -V
 #
 
 require 'rubygems'
@@ -159,7 +159,7 @@ class ReminderPlugin < Ircbot::Plugin
     when %r{^\d{4}.?\d{1,2}.?\d{1,2}}
       event = Reminder.register(text)
       text  = "Remind you again at %s" % event.alert_at.strftime("%Y-%m-%d %H:%M")
-      throw :done, text
+      return text
     end
     return nil
 
@@ -195,7 +195,8 @@ end
 
 
 ######################################################################
-### Setup database
+### Spec in file:
+###   ruby plugins/reminder.rb
 
 if $0 == __FILE__
 
@@ -210,34 +211,32 @@ if $0 == __FILE__
   end
 
   spec($0, DATA.read{}) do |tmp|
-    system("spec -cfs #{tmp.path}")
+    system("rspec -cfs #{tmp.path}")
   end
 end
 
 __END__
 
-require 'spec'
+require 'rspec'
 require 'ostruct'
 
-module Spec
-  module Example
-    module Subject
-      module ExampleGroupMethods
-        def parse(text, &block)
-          describe "(#{text})" do
-            subject {
-              event = Reminder.parse(text)
-              hash  = {
-                :st     => (event.st.strftime("%Y-%m-%d %H:%M:%S") rescue nil),
-                :en     => (event.en.strftime("%Y-%m-%d %H:%M:%S") rescue nil),
-                :title  => event.title.to_s,
-                :desc   => event.title.to_s,
-                :allday => event.allday,
-              }
-              OpenStruct.new(hash)
+module RSpec
+  module Core
+    module SharedExampleGroup
+      def parse(text, &block)
+        describe "(#{text})" do
+          subject {
+            event = Reminder.parse(text)
+            hash  = {
+              :st     => (event.st.strftime("%Y-%m-%d %H:%M:%S") rescue nil),
+              :en     => (event.en.strftime("%Y-%m-%d %H:%M:%S") rescue nil),
+              :title  => event.title.to_s,
+              :desc   => event.title.to_s,
+              :allday => event.allday,
             }
-            instance_eval(&block)
-          end
+            OpenStruct.new(hash)
+          }
+          instance_eval(&block)
         end
       end
     end
