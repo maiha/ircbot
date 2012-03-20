@@ -46,8 +46,35 @@ module Ircbot
     ######################################################################
     ### Operations
 
+    def done(text = nil)
+      throw :done, text
+    end
+
     def help
       raise "no helps for #{plugin_name}"
+    end
+
+    ######################################################################
+    ### Messages
+
+    def direct?
+      message.channel == config.nick
+    end
+
+    def me?
+      !! (message.message =~ /\A#{config.nick}\./)
+    end
+
+    def nick
+      message.prefix.nick
+    end
+
+    def command
+      (message.message =~ /\A#{config.nick}\./) ? $'.to_s.strip.split.first.to_s : ''
+    end
+
+    def arg
+      (message.message =~ /\A#{config.nick}\./) ? (a = $'.to_s.strip.split; a.shift; a.join) : ''
     end
 
     private
@@ -55,14 +82,6 @@ module Ircbot
         plugin!(name)
       rescue
         Null.new
-      end
-
-      def direct?
-        message.channel == config.nick
-      end
-
-      def nick
-        message.prefix.nick
       end
   end
 end

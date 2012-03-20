@@ -14,35 +14,32 @@ commands: load, start, stop, delete
   end
 
   def reply(text)
-    text.strip.gsub(/^#{config.nick}\./) {
-      command, arg = $'.split(/\s+/,2)
-      arg = arg.to_s.strip
-
-      case command.to_s
+    if me?
+      case command
       when "load", "register"
         plugins.load arg
-        throw :halt, "Loaded #{arg}"
+        done "Loaded #{arg}"
 
       when "delete", "remove"
         plugins.delete arg
-        throw :halt, "Removed #{arg}"
+        done "Removed #{arg}"
 
       when "start"
         plugins.start arg
-        throw :halt, "Started #{arg}"
+        done "Started #{arg}"
 
       when "stop"
         plugins.stop arg
-        throw :halt, "Stopped #{arg}"
+        done "Stopped #{arg}"
 
       when "help"
         if arg.empty?
-          throw :halt, [bot_help, plugins_help].join("\n")
+          done [bot_help, plugins_help].join("\n")
         else
-          throw :halt, plugins[arg].help
+          done plugins[arg].help
         end
       end
-    }
+    end
     return nil
   end
 

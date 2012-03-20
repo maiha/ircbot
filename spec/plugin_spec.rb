@@ -44,9 +44,17 @@ describe Ircbot::Plugin do
   context "(not connected)" do
     subject{ Ircbot::Plugin.new }
 
-    its(:plugin , :foo) { should be_kind_of(Ircbot::Plugin::Null) }
-    its(:plugin!, :foo) { lambda {subject}.should raise_error(Ircbot::PluginNotFound) }
-    its(:direct?      ) { should == false }
+    it "#plugin(:foo) should detect Null plugin" do
+      subject.send(:plugin, :foo).should be_kind_of(Ircbot::Plugin::Null)
+    end
+
+    it "#plugin!(:foo) should raise PluginNotFound" do
+      lambda {
+        subject.send(:plugin!, :foo)
+      }.should raise_error(Ircbot::PluginNotFound)
+    end
+
+#    its(:direct?      ) { should == false }
   end
 
   ######################################################################
@@ -62,9 +70,15 @@ describe Ircbot::Plugin do
     end
     subject{ Ircbot::Plugin.new(@plugins) }
 
-    its(:plugin , :foo) { should == @foo }
-    its(:plugin!, :foo) { should == @foo }
-    its(:direct?      ) { should == false }
+    it "#plugin(:foo) should find the defined foo plugin" do
+      subject.send(:plugin, :foo).should == @foo
+    end
+
+    it "#plugin!(:foo) should find the defined foo plugin" do
+      subject.send(:plugin!, :foo).should == @foo
+    end
+
+#    its(:direct?      ) { should == false }
   end
 
 end
