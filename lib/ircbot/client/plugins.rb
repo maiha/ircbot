@@ -54,7 +54,7 @@ module Ircbot
 
       def plugins_rescue_action(type, plugin, e)
         p [e.class, e.message, type, plugin]
-        at = e.backtraces rescue '(no backtraces)'
+        at = e.backtrace rescue '(no backtraces)'
         puts at
       end
 
