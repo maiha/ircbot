@@ -247,9 +247,11 @@ module Ch2
 
     def summarize
       retrieve
-      case arg
+      case arg.scan(/[\d-]/).join
       when /^\d+$/                # exact id
         range = (arg.to_i .. arg.to_i)
+      when /^(\d+)-(\d+)$/
+        range = ($1.to_i .. $2.to_i)
       when /^(\d+)-$/
         range = ($1.to_i .. 1000)
       when /^-(\d+)$/
