@@ -258,13 +258,16 @@ module Ch2
         range = (1 .. $2.to_i)
       else
         range = (1 .. 1000)
+        sort  = true
       end
 
       lines = range.map{|i| self[i]}.compact
       if lines.size == 1
         return lines.first.to_s
       else
-        return lines.map(&:body).sort_by(&:size).reverse.join(" ").gsub(/\s+/, ' ')
+        bodies = lines.map(&:body)
+        bodies.sort!{|a,b| b.size <=> a.size} if sort
+        return bodies.join(" ").gsub(/\s+/, ' ')
       end
     end
   end
