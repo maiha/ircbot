@@ -28,7 +28,7 @@ class SummaryPlugin < Ircbot::Plugin
     def summarize(url)
       dat = Ch2::Dat.new(url)
       dat.valid? or raise Nop
-      return dat.summarize
+      return dat.summarize.gsub(/\s+/m, ' ')
     end
 
     def once(key, &block)
