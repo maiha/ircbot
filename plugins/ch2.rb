@@ -247,7 +247,9 @@ module Ch2
 
     def summarize
       retrieve
-      case arg.scan(/[\d-]/).join
+      lead = "[%s] " % subject
+
+      case (arg||"").scan(/[\d-]/).join
       when /^\d+$/                # exact id
         range = (arg.to_i .. arg.to_i)
       when /^(\d+)-(\d+)$/
@@ -263,11 +265,11 @@ module Ch2
 
       lines = range.map{|i| self[i]}.compact
       if lines.size == 1
-        return lines.first.to_s
+        return lead + lines.first.to_s
       else
         bodies = lines.map(&:body)
         bodies.sort!{|a,b| b.size <=> a.size} if sort
-        return bodies.join(" ").gsub(/\s+/, ' ')
+        return lead + bodies.join(" ").gsub(/\s+/, ' ')
       end
     end
   end
