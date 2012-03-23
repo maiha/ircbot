@@ -16,7 +16,7 @@ commands: load, start, stop, delete
   def reply(text)
     if me?
       case command
-      when "load", "register"
+      when "load"
         plugins.load arg
         done "Loaded #{arg}"
 
