@@ -65,7 +65,7 @@ class SummaryPlugin < Ircbot::Plugin
 
     def fetch(url)
       escaped_url = Escape.shell_command(url)
-      `curl '#{escaped_url}'`
+      `curl #{escaped_url}`
     end
 
     def once(key, &block)
