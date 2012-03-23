@@ -1,0 +1,267 @@
+#!/usr/bin/ruby -Ke
+load 'html.rb'
+
+require 'ggcl/net/http'
+require 'cgi'
+
+class SummaryAgent
+  WAIT_SEC = 3
+  OUT_SIZE = 90		# 表示文字数
+  CONTENT_LENGTH_LIMIT = 3 * 1024 * 1024		# within 3Mbytes
+
+  class IRCFloodError		< StandardError; end
+  class AlreadyOpenedError	< StandardError; end
+  class NonTextError		< StandardError; end
+  class SizeExceededError	< StandardError; end
+  class MissingUrlError		< StandardError; end
+  class NoSummaryError		< StandardError; end
+
+  PARENTHESIS = Hash[*%w|
+    ( ) [ ] { } 『 』 〔 〕
+  |]
+
+  class <<self
+    def adjust_parenthesis (url, prefix)
+      # xxx(http://.../) な場合、末尾の括弧を調整する。
+      keys = PARENTHESIS .keys
+      vals = PARENTHESIS .values
+      regexp1 = '(' + keys .collect{|i| Regexp.escape(i)} .join('|') + ')'
+      regexp2 = '(' + vals .collect{|i| Regexp.escape(i)} .join('|') + ')'
+      if /(#{regexp1}+)$/ === prefix .to_s
+	url .gsub!(/#{regexp2}+$/, '')
+      end
+      url
+    end
+
+    PATTERN_EUC = '[\xa1-\xfe][\xa1-\xfe]'
+    REGEXP_EUC  = Regexp .new(PATTERN_EUC, 'n')
+    def adjust_2bytes_code (url)
+      if REGEXP_EUC === url
+	url = $`
+      end
+      return url
+    end
+
+    def adjust_url(url, prefix)
+      url = adjust_2bytes_code(url)
+      adjust_parenthesis(url, prefix)
+    end
+
+    def extract_url (string)
+      case string .to_s
+      when /http:\/\/([^:\/]+)(:(\d+))?(\/[^#\s　]*)(#(\S+))?/oi
+	return adjust_url($&, $`)
+      when /https:\/\/([^:\/]+)(:(\d+))?(\/[^#\s　]*)(#(\S+))?/oi
+	return adjust_url($&, $`)
+      else
+	raise MissingUrlError
+      end
+    end
+  end
+
+  def initialize (*)
+    @url_history = []
+    @previous_times = {}	# 本機能の最終利用開始時間(各ユーザ毎)
+    @options = {}		# 各種オプション
+
+    title(true)
+  end
+
+  def title (setter = nil)
+    if setter
+      return @options[:title] = setter
+    else
+      return @options[:title]
+    end
+  end
+
+  def out_size
+    @out_size || OUT_SIZE
+  end
+
+  def wait_sec
+    @wait_sec || WAIT_SEC
+  end
+
+  def do_help (msg)
+    nick = msg[:client].config[:nick]
+    <<HELP
+[Webページの要約](#{wait_sec}秒待機、#{out_size}文字表示)
+コマンド: #{nick}.(summary|要約).{wait=,size=,title=(on/off)}
+検索方法: URL ＞ #{nick}.(summary|要約)
+HELP
+  end
+
+  def check_type (url)
+    response = GGCL::Net::HTTP .new(url) .head
+    response .content_type
+  end
+
+  def text? (url)
+    /text/i === check_type(url)
+  end
+
+  def response (url)
+    GGCL::Net::HTTP .new(url) .head
+  end
+
+  def check_header (url)
+    res = response(url)
+
+    # Content-Type を調べる
+    /text/i === res .content_type or
+      raise NonTextError
+
+    # Content-Length を調べる
+    size = res['content-length'] .to_i
+    size <= CONTENT_LENGTH_LIMIT or
+      raise SizeExceededError .new("#{size}bytes for #{CONTENT_LENGTH_LIMIT}")
+  end
+
+  def maybe_flood? (from)
+    (Time .now .to_i - @previous_times[from] .to_i) < wait_sec
+  end
+
+  def check_flood (from)
+    maybe_flood? and raise IRCFloodError
+  end
+
+  def summary (url, size = nil)
+    html  = HTML.get(url)
+
+    if html .frame?
+      frame = html .frames .sort .first
+      if frame .src
+	url = HTML::compose_path(url, frame .src)
+	return summary(url, size)
+      end
+    end
+
+    value = html .summary(size || out_size)
+
+    if title
+#      lead  = html .title_or_nil
+      lead = ''
+      if /<TITLE(.*?)>(.*?)<\/TITLE>/im =~ html.html then
+       lead = $2
+      end	
+      if lead
+	lead .gsub!(/\s+/, '')
+	lead = "[#{lead}]"
+      end
+      return "#{lead}#{value}"
+    else
+      return value
+    end
+  end
+
+  def already_opened? (url)
+    bool = @url_history .include? url
+    @url_history << url
+    return bool
+  end
+
+  def check_duplicate_url (url)
+    already_opened?(url) and
+      raise AlreadyOpenedError
+  end
+
+  def do_summary (msg, wait = nil)
+    begin
+      from = msg[:from]
+      return nil if from =~ /sama-zu/
+      maybe_flood?(from) if wait
+      url = self.class.extract_url(msg[:str])
+      return nil if url =~ /onamae/
+      return nil if url =~ /dzz.jp\/up\/download/
+      check_duplicate_url(url)
+      check_header(url)
+
+      @previous_times[from] = Time .now
+      buffer = summary(url) or raise NoSummaryError
+      buffer = CGI::unescapeHTML(buffer)
+      return ">> #{buffer}"
+
+    rescue IRCFloodError
+    rescue AlreadyOpenedError
+    rescue NonTextError
+    rescue SizeExceededError	; return "error: size exceeded. #{$!}"
+    rescue MissingUrlError
+    rescue NoSummaryError
+    rescue Exception		; return "error: #{$!}"
+    end
+
+    return nil
+  end
+
+  def do_command (msg)
+    case msg[:command] .to_s
+    when 'summary', '要約'
+      return do_summary(msg)
+    when /^(summary|要約).title=/io
+      case $' .to_s
+      when /off/i, /0/, ''
+	title(nil)
+	return "見出しをOFFにしたにゃー。"
+      else
+	title(true)
+	return "見出しをONにしたにゃー。"
+      end
+
+    when /^(summary|要約).size=/io
+      range = (5..1000)
+      if range === (size = $'.to_i)
+	@out_size = size
+	return "表示文字数を#{out_size}bytesに変更したにゃー。"
+      else
+	return "error: 表示数制限(#{range})違反です。"
+      end
+
+    when /^(summary|要約).wait=/io
+      if (sec = $'.to_i) >= WAIT_SEC
+	@wait_sec = sec
+	return "待機時間を#{wait_sec}秒に変更したにゃー。"
+      else
+	return "error: 待機時間の下限が#{WAIT_SEC}秒に設定されています。"
+      end
+    end
+    return nil
+  end
+
+  def do_reply (msg)
+    return do_summary(msg, :wait)
+  end
+end
+
+if $0 == __FILE__
+
+#   require 'nkf'
+#   str = NKF::nkf('-e', ARGF.read)
+#   str = 'aho'
+#   html = HTML .new(str)
+#   p html .frame?
+#   frames = html .frames
+#   best = frames .sort .first
+#   p best
+#   exit
+
+  agent = SummaryAgent .new
+  string = 'http://www.asahi.com/'
+  sum = SummaryAgent.new.summary(string,100)
+  puts sum	
+
+
+#  string = 'シャアザク〜 http://www.zdnet.co.jp/news/bursts/0111/09/zaku.html あいうえお、挨拶だにゃー。たしかし'
+#  p SummaryAgent::extract_url(string)
+
+#  string = 'http://kazu.nori.org/'
+#  string = "http://pucca.astron.s.u-tokyo.ac.jp/image/ogiyahagi1.mpg"
+#  string = 'http://kazu.nori.org/1.png'
+#  agent .check_type(string)
+
+#  string = 'http://www.asahi.com/'
+
+#  p agent .do_reply({:from, :AnnaChan, :str, string})
+end
+
+SummaryAgent .new
