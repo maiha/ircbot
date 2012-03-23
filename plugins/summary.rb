@@ -25,12 +25,12 @@ class SummaryPlugin < Ircbot::Plugin
     scan_urls(text).each do |url|
       case url
       when /2ch\.net/
-        text = once(url) {summarize_2ch(url)}
+        str = once(url) {summarize_2ch(url)}
       when %r{^https:}
-        text = once(url) {summarize(url)}
+        str = once(url) {summarize(url)}
       else
       end
-      done(text) if text
+      done(str) if str
     end
     return nil
 
