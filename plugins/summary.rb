@@ -5,6 +5,7 @@ require 'ircbot'
 require 'uri'
 require 'ch2'
 require 'escape'
+require 'open3'
 
 ######################################################################
 # [Install]
@@ -64,8 +65,7 @@ class SummaryPlugin < Ircbot::Plugin
     end
 
     def fetch(url)
-      escaped_url = Escape.shell_command(url)
-      `curl #{escaped_url}`
+      Open3.popen3("curl", "--location", "--compressed", url) {|i,o,e| o.read }
     end
 
     def once(key, &block)
