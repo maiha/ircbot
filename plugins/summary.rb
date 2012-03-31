@@ -97,7 +97,7 @@ class NormalSummarizer < Summarizer
 end
 
 class Ch2Summarizer < Summarizer
-  register %r{2ch\.net}
+  register %r{^http://\+\.2ch\.net}
 
   def summarize
     dat = Ch2::Dat.new(@url)
