@@ -59,7 +59,8 @@ class Summarizer
   end
 
   def get_title(html)
-    return $1.strip if %r{<title>(.*?)</title>}mi =~ html
+    title = $1.strip if %r{<title>(.*?)</title>}mi =~ html
+    trim_tags(title)
   end
 
   def trim_tags(html)
