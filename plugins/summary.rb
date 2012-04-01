@@ -94,7 +94,7 @@ class Summarizer
 end
 
 class NormalSummarizer < Summarizer
-  register %r{^https?://}
+  register %r{^https://}
 end
 
 class Ch2Summarizer < Summarizer
