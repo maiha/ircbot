@@ -18,6 +18,8 @@ require 'open3'
 class Summarizer
   Mapping = []
 
+  class NotImplementedError < NotImplementedError; end
+
   Nop = Class.new(RuntimeError)
 
   class << self
@@ -27,9 +29,9 @@ class Summarizer
 
     def create(url)
       for pattern, klass in Mapping
-        break if pattern =~ url
+        return klass.new(url) if pattern =~ url
       end
-      klass.new(url)
+      raise NotImplementedError, "Not supported URL: %s" % url
     end
   end
 
@@ -131,8 +133,12 @@ class SummaryPlugin < Ircbot::Plugin
   def reply(text)
     scan_urls(text).each do |url|
       summary = once(url) {
-        summarizer = Summarizer.create(url)
-        summarizer.summarize
+        begin
+          summarizer = Summarizer.create(url)
+          summarizer.summarize
+        rescue Summarizer::NotImplementedError => e
+          nil
+        end
       }
       done(summary) if summary
     end
