@@ -108,7 +108,9 @@ module Ircbot
         raise PluginNotFound, name.to_s
 
       script = path.read{}
-      eval(script, Ircbot.toplevel_binding)
+      Dir.chdir(path.parent) do
+        eval(script, Ircbot.toplevel_binding)
+      end
 
       return Object.const_get(class_name).new
 
