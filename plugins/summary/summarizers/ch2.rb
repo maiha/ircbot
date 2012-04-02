@@ -1,3 +1,5 @@
+require 'ch2'
+
 module Summarizers
   class Ch2 < Base
     url %r{^http://[^./]+\.2ch\.net}

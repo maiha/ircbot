@@ -4,14 +4,15 @@ require 'rubygems'
 require 'ircbot'
 require 'uri'
 require 'nkf'
-require 'ch2'
-require 'summarizer'
+require 'summarizers'
 
 ######################################################################
-# [Install]
+# [INSTALL]
+#   apt-get install curl
 #
-# apt-get install curl
-#
+# [TEST]
+#   cd plugins/summary
+#   rspec -c spec
 
 class SummaryPlugin < Ircbot::Plugin
   Quote = ">> "
@@ -23,15 +24,16 @@ class SummaryPlugin < Ircbot::Plugin
   def reply(text)
     scan_urls(text).each do |url|
       summary = once(url) {
-        Summarizer.create(url).execute
+        Summarizers.create(url).execute
       }
       done(Quote + summary) if summary
     end
     return nil
 
-  rescue Summarizer::NotImplementedError => e
+  rescue Summarizers::NotImplementedError => e
+    $stderr.puts e
     return nil
-  rescue Nop
+  rescue Summarizers::Nop
     return nil
   end
 
@@ -42,7 +44,7 @@ class SummaryPlugin < Ircbot::Plugin
 
     def once(key, &block)
       @once ||= {}
-      raise Nop if @once.has_key?(key)
+      raise Summarizers::Nop if @once.has_key?(key)
       return block.call
     ensure
       @once[key] = 1
@@ -51,6 +53,6 @@ end
 
 
 if __FILE__ == $0
-  p summarizer = Summarizer.create(ARGV.shift)
-  puts summarizer.summarize
+  p summarizer = Summarizers.create(ARGV.shift)
+  puts summarizer.execute
 end
