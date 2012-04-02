@@ -264,13 +264,9 @@ module Ch2
       end
 
       lines = range.map{|i| self[i]}.compact
-      if lines.size == 1
-        return lead + lines.first.to_s
-      else
-        bodies = lines.map(&:body)
-        bodies.sort!{|a,b| b.size <=> a.size} if sort
-        return lead + bodies.join(" ").gsub(/\s+/, ' ')
-      end
+      bodies = lines.map(&:body)
+      bodies.sort!{|a,b| b.size <=> a.size} if sort
+      return lead + bodies.join(" ").gsub(/\s+/, ' ')
     end
   end
 end
