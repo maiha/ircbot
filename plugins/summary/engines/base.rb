@@ -1,4 +1,4 @@
-module Summarizers
+module Engines
   class Base
     dsl_accessor :url
 

@@ -4,7 +4,7 @@ require 'rubygems'
 require 'ircbot'
 require 'uri'
 require 'nkf'
-require 'summarizers'
+require 'engines'
 
 ######################################################################
 # [INSTALL]
@@ -24,16 +24,16 @@ class SummaryPlugin < Ircbot::Plugin
   def reply(text)
     scan_urls(text).each do |url|
       summary = once(url) {
-        Summarizers.create(url).execute
+        Engines.create(url).execute
       }
       done(Quote + summary) if summary
     end
     return nil
 
-  rescue Summarizers::NotImplementedError => e
+  rescue Engines::NotImplementedError => e
     $stderr.puts e
     return nil
-  rescue Summarizers::Nop
+  rescue Engines::Nop
     return nil
   end
 
@@ -44,7 +44,7 @@ class SummaryPlugin < Ircbot::Plugin
 
     def once(key, &block)
       @once ||= {}
-      raise Summarizers::Nop if @once.has_key?(key)
+      raise Engines::Nop if @once.has_key?(key)
       return block.call
     ensure
       @once[key] = 1
@@ -53,6 +53,6 @@ end
 
 
 if __FILE__ == $0
-  p summarizer = Summarizers.create(ARGV.shift)
+  p summarizer = Engines.create(ARGV.shift)
   puts summarizer.execute
 end

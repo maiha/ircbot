@@ -1,4 +1,4 @@
-module Summarizers
+module Engines
   class None < Base
     url %r{}
 

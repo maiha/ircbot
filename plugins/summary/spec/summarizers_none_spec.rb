@@ -1,15 +1,15 @@
 require File.join(File.dirname(__FILE__), "spec_helper")
 
-require 'summarizers'
+require 'engines'
 
-describe Summarizers::None do
-  subject { Summarizers::None.new('') }
+describe Engines::None do
+  subject { Engines::None.new('') }
 
   describe "#execute" do
     it "should raise Nop" do
       lambda {
         subject.execute
-      }.should raise_error(Summarizers::Nop)
+      }.should raise_error(Engines::Nop)
     end
   end
 end

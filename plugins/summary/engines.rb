@@ -1,7 +1,7 @@
 require 'dsl_accessor'
 require 'extlib'
 
-module Summarizers
+module Engines
   Mapping = []
 
   class NotImplementedError < NotImplementedError; end
@@ -16,7 +16,7 @@ module Summarizers
 
   # load ruby library and register its url
   def self.register(name)
-    load File.dirname(__FILE__) + "/summarizers/#{name}.rb"
+    load File.dirname(__FILE__) + "/engines/#{name}.rb"
     klass = instance_eval(Extlib::Inflection.camelize(name))
     Mapping.unshift [klass.url, klass] unless klass == Base
   end

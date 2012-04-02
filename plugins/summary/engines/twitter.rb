@@ -1,4 +1,4 @@
-module Summarizers
+module Engines
   class Twitter < Base
     url %r{twitter\.com}
 

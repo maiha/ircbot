@@ -1,6 +1,6 @@
 require 'ch2'
 
-module Summarizers
+module Engines
   class Ch2 < Base
     url %r{^http://[^./]+\.2ch\.net}
 
