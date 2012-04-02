@@ -1,3 +1,5 @@
+require 'open3'
+
 module Engines
   class Base
     dsl_accessor :url
