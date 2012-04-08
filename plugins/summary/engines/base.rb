@@ -35,7 +35,7 @@ module Engines
 
     def get_title(html)
       title = $1.strip if %r{<title>(.*?)</title>}mi =~ html
-      trim_tags(title)
+      title ? trim_tags(title) : ""
     end
 
     def trim_tags(html)
