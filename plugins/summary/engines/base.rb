@@ -1,4 +1,5 @@
 require 'open3'
+require 'cgi'
 
 module Engines
   class Base
@@ -47,6 +48,7 @@ module Engines
       html.gsub!(%r{<\!--.*?-->}mi, '')
       html.gsub!(/\s+/m, ' ')
       html.strip!
+      html = CGI.unescapeHTML(html)
       return html
     end
 
