@@ -66,8 +66,12 @@ module Reminder
         "event"
       end
 
-      def reminders
+      def alerts
         all(:alerted=>false, :alert_at.lt=>Time.now, :order=>[:alert_at])
+      end
+
+      def future
+        all(:alerted=>false, :alert_at.gt=>Time.now, :order=>[:alert_at])
       end
     end
 
@@ -137,7 +141,7 @@ class ReminderPlugin < Ircbot::Plugin
     def start
       loop do
         if callback
-          events = Reminder::Event.reminders
+          events = Reminder::Event.alerts
           #debug "#{self.class} found #{events.size} events"
           events.each do |event|
             callback.call(event)
@@ -149,9 +153,32 @@ class ReminderPlugin < Ircbot::Plugin
     end
   end
 
-  def reply(text)
-    start_reminder
+  def help
+    ["list -> show future reminders",
+     "YYYY-mm-dd or YYYY-mm-dd HH:MM text -> register the text"].join("\n")
+  end
 
+  def setup
+    bot = self.bot
+    callback = proc{|event| bot.broadcast event.to_s}
+    @event_watcher_thread ||=
+      (connect
+       reminder = EventWatcher.new(:interval=>60, :callback=>callback)
+       Thread.new { reminder.start })
+  end
+
+  def list
+    events = Reminder::Event.future
+    if events.size == 0
+      return "no reminders"
+    else
+      lead = "#{events.size} reminder(s)"
+      body = events.map(&:to_s)[0,5]
+      return ([lead] + body).join("\n")
+    end
+  end
+
+  def reply(text)
     # strip noise
     text = text.sub(/^<.*?>/,'').strip
 
@@ -175,15 +202,6 @@ class ReminderPlugin < Ircbot::Plugin
   end
 
   private
-    def start_reminder(&callback)
-      bot = self.bot
-      callback ||= proc{|event| bot.broadcast event.to_s}
-      @event_watcher_thread ||=
-        (connect
-         reminder = EventWatcher.new(:interval=>60, :callback=>callback)
-         Thread.new { reminder.start })
-    end
-
     def reminder_db_path
       Ircbot.root + "db" + "reminder-#{config.nick}.db"
     end
