@@ -110,6 +110,7 @@ module Ircbot
         plugin.plugins = self
         plugins[plugin.plugin_name] = plugin
         plugin.running = true
+        plugin.setup
       when Class
         if plugin.ancestors.include?(Ircbot::Plugin)
           self << plugin.new(self)

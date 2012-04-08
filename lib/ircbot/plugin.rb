@@ -23,8 +23,6 @@ module Ircbot
       @plugins = plugins || Plugins.new
       @message = InitialMessage.new(self.class.name)
       @running = false
-
-      setup
     end
 
     def setup
