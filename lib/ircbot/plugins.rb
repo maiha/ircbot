@@ -25,7 +25,33 @@ module Ircbot
     end
 
     ######################################################################
+    ### Caching
+
+    def clear_cache
+      @cache = {}
+    end
+
+    def cache(key = nil, &block)
+      key = key.to_s
+      return @cache ||= {} if key.empty?
+
+      if @cache.has_key?(key)
+        @cache[key]
+      else
+        @cache[key] = block.call
+      end
+    end
+
+    ######################################################################
     ### Accessors
+
+    def active_names
+      cache(:active_names) { active.map(&:plugin_name) }
+    end
+
+    def active
+      cache(:active) { select(&:running) }
+    end
 
     def plugin!(plugin)
       case plugin
@@ -52,16 +78,23 @@ module Ircbot
 
     def start(plugin)
       plugin!(plugin).running = true
+      changed!
     end
 
     def stop(plugin)
       plugin!(plugin).running = false
+      changed!
     end
 
     def delete(plugin)
       name = plugin.is_a?(Plugin) ? plugin.name : plugin.to_s
       plugin!(name)
       @plugins.delete(name)
+      changed!
+    end
+
+    def changed!
+      clear_cache
     end
 
     ######################################################################
@@ -93,6 +126,7 @@ module Ircbot
       else
         raise NotImplementedError, "#<< for #{plugin.class}"
       end
+      changed!
       return self
     end
     alias :<< :load
@@ -116,10 +150,6 @@ module Ircbot
 
     rescue NameError => e
       raise LoadError, "Expected #{path} to define #{class_name} (#{e})"
-    end
-
-    def active
-      select(&:running)
     end
 
     def inspect

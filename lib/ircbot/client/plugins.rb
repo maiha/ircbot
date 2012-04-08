@@ -19,10 +19,21 @@ module Ircbot
       text = decode(m.params[1].to_s)
       args = [text, m.prefix.nick, m]
 
+      plugins_call_command(args, m)
       plugins_call_replies(args, m)
     }
 
     private
+      def plugins_call_command(args, m)
+        case m.message.to_s          # text
+        when /^#{config.nick}\.(#{plugins.active_names.join('|')})\./
+          plugin = plugins[$1]
+          command, arg = $'.to_s.split(/\b/, 2)
+          args = [arg.to_s.strip]
+          plugins_call_action(command, plugin, args, m, :reply=>true)
+        end
+      end
+
       def plugins_call_replies(args, m)
         text = catch(:done) do
           plugins.active.each do |plugin|
