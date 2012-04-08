@@ -10,21 +10,27 @@ module Engines
       @url = url
     end
 
+    def head(url)
+      # HTTP/1.1 200 OK
+      # Content-Type: text/html; charset=utf-8
+      # Date: Sun, 08 Apr 2012 18:08:45 GMT
+      # Content-Length: 245091
+      # Server: GSE
+
+      curl_options = ["--head"]
+      Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e| o.read }
+    end
+
+    def text?(url)
+      head(url).to_s =~ %r{^Content-Type:.*text/}
+    end
+
     def fetch(url)
       curl_options = [
                       "--location", "--compressed",
                       "--max-filesize", "%d" % MaxContentLength,
                      ]
       Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e| o.read }
-    end
-
-    def get_content_type(html)
-      content_type = Open3.popen3("file", "-b", "--mime-type", "-") {|i,o,e|
-        i.write(html)
-        i.close
-        o.read
-      }
-      content_type.chomp
     end
 
     def get_title(html)
@@ -45,16 +51,13 @@ module Engines
     end
 
     def parse(html)
-      content_type = get_content_type(html)
-      unless %r{^(?:text/|application/xml)}i =~ content_type
-        raise Nop, "Not HTML: #{content_type}"
-      end
       title = get_title(html)
       body = trim_tags(html)
       return title, body
     end
 
     def execute
+      raise Nop, "Not Text" unless text?(@url)
       html = fetch(@url)
       html = NKF.nkf("-w", html)
       title, body = parse(html)
