@@ -46,6 +46,7 @@ module Engines
       html.gsub!(%r{<noscript.*?>.*?</noscript>}mi, '')
       html.gsub!(%r{</?.*?>}, '')
       html.gsub!(%r{<\!--.*?-->}mi, '')
+      html.gsub!(%r{<\!\w.*?>}mi, '')
       html.gsub!(/\s+/m, ' ')
       html.strip!
       html = CGI.unescapeHTML(html)
