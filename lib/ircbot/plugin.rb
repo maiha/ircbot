@@ -19,6 +19,11 @@ module Ircbot
     attr_accessor :running
     attr_accessor :plugin_name
 
+    def self.command?(name)
+      @commands ||= (public_instance_methods - Plugin.public_instance_methods).inject({"setup"=>1}) {|h,k| h[k.to_s] = 1; h }
+      !! @commands[name.to_s]
+    end
+
     def initialize(plugins = nil)
       @plugins = plugins || Plugins.new
       @message = InitialMessage.new(self.class.name)

@@ -30,7 +30,9 @@ module Ircbot
           plugin = plugins[$1]
           command, arg = $'.to_s.split(/\b/, 2)
           args = [arg.to_s.strip]
-          plugins_call_action(command, plugin, args, m, :reply=>true)
+          if plugin.class.command?(command)
+            plugins_call_action(command, plugin, args, m, :reply=>true)
+          end
         end
       end
 
