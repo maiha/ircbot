@@ -8,7 +8,7 @@ module Engines
     end
 
     def normalize_url(url)
-      return url.sub(%r{#!/}, '').sub(%r{//(twitter.com/)}, "//mobile.\\1")
+      return url.sub(%r{#!/}, '').sub(%r{//(?:\w+\.)?(twitter.com/)}, "//mobile.\\1")
     end
   end
 end
