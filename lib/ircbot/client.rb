@@ -17,3 +17,9 @@ require "ircbot/client/config/channels"
 require "ircbot/client/config/plugins"
 require "ircbot/client/timeout"
 require "ircbot/client/plugins"
+
+######################################################################
+### Irctob::Utils
+
+require "ircbot/utils/watcher"
+require "ircbot/utils/html_parser"

@@ -17,16 +17,12 @@ require 'dm-migrations'
 require 'dm-timestamps'
 
 module Reminder
-  def self.connect(path = nil)
-    @connecteds ||= {}
-    @connecteds[path] ||=
-      (
-       path ||= Pathname(Dir.getwd) + "db" + "reminder.db"
-       path = Pathname(path).expand_path
-       path.parent.mkpath
-       DataMapper.setup(:default, "sqlite3://#{path}")
-       Reminder::Event.auto_upgrade!
-       )
+  REPOSITORY_NAME = :reminder
+
+  def self.connect(path)
+    path.parent.mkpath
+    DataMapper.setup(REPOSITORY_NAME, "sqlite3://#{path}")
+    Reminder::Event.auto_upgrade!
   end
 
   ######################################################################
@@ -46,6 +42,9 @@ module Reminder
   ### Event
 
   class Event
+    def self.default_repository_name; REPOSITORY_NAME; end
+    def self.default_storage_name   ; "event"; end
+
     include DataMapper::Resource
 
     property :id       , Serial
@@ -62,10 +61,6 @@ module Reminder
     ### Class methods
 
     class << self
-      def default_storage_name
-        "event"
-      end
-
       def alerts
         all(:alerted=>false, :alert_at.lt=>Time.now, :order=>[:alert_at])
       end
@@ -129,27 +124,9 @@ end
 
 
 class ReminderPlugin < Ircbot::Plugin
-  class EventWatcher
-    attr_accessor :interval
-    attr_accessor :callback
-
-    def initialize(options = {})
-      @interval = options[:interval] || 60
-      @callback = options[:callback] || proc{|e| puts e}
-    end
-
-    def start
-      loop do
-        if callback
-          events = Reminder::Event.alerts
-          #debug "#{self.class} found #{events.size} events"
-          events.each do |event|
-            callback.call(event)
-            event.done!
-          end
-        end
-        sleep interval
-      end
+  class EventWatcher < Ircbot::Utils::Watcher
+    def srcs
+      Reminder::Event.alerts
     end
   end
 
@@ -159,12 +136,12 @@ class ReminderPlugin < Ircbot::Plugin
   end
 
   def setup
+    return if @watcher
     bot = self.bot
-    callback = proc{|event| bot.broadcast event.to_s}
-    @event_watcher_thread ||=
-      (connect
-       reminder = EventWatcher.new(:interval=>60, :callback=>callback)
-       Thread.new { reminder.start })
+    Reminder.connect(Ircbot.root + "db" + "#{config.nick}-reminder.db")
+    callback = proc{|event| bot.broadcast event.to_s; event.done!}
+    reminder = EventWatcher.new(:interval=>60, :callback=>callback)
+    @watcher = Thread.new { reminder.start }
   end
 
   def list
@@ -200,15 +177,6 @@ class ReminderPlugin < Ircbot::Plugin
     puts "Reminder ignores past event: #{e.event.st}"
     return nil
   end
-
-  private
-    def reminder_db_path
-      Ircbot.root + "db" + "reminder-#{config.nick}.db"
-    end
-
-    def connect
-      @connect ||= Reminder.connect(reminder_db_path)
-    end
 end
 
 
@@ -264,6 +232,10 @@ end
 describe "Reminder#parse" do
 
   parse '' do
+    its(:st)     { should == nil }
+  end
+
+  parse '1366x768 WXGA' do
     its(:st)     { should == nil }
   end
 
