@@ -10,7 +10,6 @@ describe Ircbot::Plugins do
   provide :client
   provide :plugins
   provide :active
-  provide :load_plugins
   provide :load
   provide :plugin!
   provide :plugin
