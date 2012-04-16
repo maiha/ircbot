@@ -171,7 +171,8 @@ class ReminderPlugin < Ircbot::Plugin
     return nil
 
   rescue Reminder::StartNotFound => e
-    return "Reminder cannot detect start: #{e.event.st}"
+    # return "Reminder cannot detect start: #{e.event.st}"
+    return nil
 
   rescue Reminder::EventHasDone => e
     puts "Reminder ignores past event: #{e.event.st}"
