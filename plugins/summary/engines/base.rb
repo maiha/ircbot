@@ -40,7 +40,7 @@ module Engines
     end
 
     def trim_tags(html)
-      html.gsub!(%r{<head.*?>.*?</head>}mi, '')
+      html.gsub!(%r{<head[^>]*>.*?</head>}mi, '')
       html.gsub!(%r{<script.*?>.*?</script>}mi, '')
       html.gsub!(%r{<style.*?>.*?</style>}mi, '')
       html.gsub!(%r{<noscript.*?>.*?</noscript>}mi, '')
