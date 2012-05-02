@@ -34,11 +34,6 @@ module Engines
       Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e| o.read }
     end
 
-    def get_title(html)
-      title = $1.strip if %r{<title>(.*?)</title>}mi =~ html
-      title ? trim_tags(title) : ""
-    end
-
     def trim_tags(html)
       html.gsub!(%r{<head[^>]*>.*?</head>}mi, '')
       html.gsub!(%r{<script.*?>.*?</script>}mi, '')
@@ -53,9 +48,47 @@ module Engines
       return html
     end
 
+    def get_title(html)
+      if %r{<title>(.*?)</title>}mi =~ html
+        title = $1.strip
+        title.gsub!(%r{<.*?>}, '')
+        CGI.unescapeHTML(title)
+      else
+        ""
+      end
+    end
+
+    def get_body(html)
+      html = NKF.nkf("-w -Z1", html)
+      if /<body.*?>(.*?)<\/body>/im =~ html
+        body = $1
+      else
+        raise Nop, "No Body Found"
+      end
+      body.gsub!(%r{<!--.*?-->}im, '')
+      body.gsub!(%r{<\!\w.*?>}mi, '')
+      body.gsub!(%r{<head.*?>.*?<\/head>}mi, '')
+      body.gsub!(%r{<script.*?>.*?<\/script>}mi, '')
+      body.gsub!(%r{<style.*?>.*?<\/style>}mi, '')
+      body.gsub!(%r{<noscript.*?>.*?</noscript>}mi, '')
+      body.gsub!(%r{(:?<a.*?>|<\/a>)}mi, '')
+      body.gsub!(%r{(:?<font.*?>|<\/font>)}mi, '')
+      body.gsub!(%r{<img.*?/?>}mi, '')
+      body.gsub!(%r{(:?<b>|<\/b>|<i>|<\/i>|<u>|<\/u>|<p>|<\/p>|<\/li>)}mi,'')
+      body.gsub!(%r{(<(:?br)(:?\s+/)?>)}mi,'')
+      body.gsub!(%r{(:?<\/?h[1-6]>)}mi, ' ')
+      body.gsub!(%r{<li>}mi, ' * ')
+      elements = body.split(/<.*?>/mi)
+      elements.each { |item| item.gsub!(/\s+/, ' ') }
+      elements.each { |item| item.strip! }
+      elements.reject! { |item| item.empty? }
+      summary = elements.max_by {|e| e.size }
+      return summary ? CGI.unescapeHTML(summary) : ""
+    end
+
     def parse(html)
       title = get_title(html)
-      body = trim_tags(html)
+      body = get_body(html)
       return title, body
     end
 
