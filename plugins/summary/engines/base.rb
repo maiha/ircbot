@@ -42,7 +42,7 @@ module Engines
       html.gsub!(%r{</?.*?>}, '')
       html.gsub!(%r{<\!--.*?-->}mi, '')
       html.gsub!(%r{<\!\w.*?>}mi, '')
-      html.gsub!(/\s+/m, ' ')
+      html.gsub!(%r{\s+}m, ' ')
       html.strip!
       html = CGI.unescapeHTML(html)
       return html
@@ -51,7 +51,8 @@ module Engines
     def get_title(html)
       if %r{<title>(.*?)</title>}mi =~ html
         title = $1.strip
-        title.gsub!(%r{<.*?>}, '')
+        title.gsub!(%r{<.*?>}m, '')
+        title.gsub!(%r{\s+}m, ' ')
         CGI.unescapeHTML(title)
       else
         ""
@@ -67,7 +68,8 @@ module Engines
       end
       body.gsub!(%r{<!--.*?-->}im, '')
       body.gsub!(%r{<\!\w.*?>}mi, '')
-      body.gsub!(%r{<head.*?>.*?<\/head>}mi, '')
+#      body.gsub!(%r{<head.*?>.*?<\/head>}mi, '')
+      body.gsub!(%r{<head[^>]*>.*?<\/head>}mi, '')
       body.gsub!(%r{<script.*?>.*?<\/script>}mi, '')
       body.gsub!(%r{<style.*?>.*?<\/style>}mi, '')
       body.gsub!(%r{<noscript.*?>.*?</noscript>}mi, '')
