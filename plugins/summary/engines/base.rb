@@ -61,7 +61,6 @@ module Engines
     end
 
     def get_body(html)
-      html = NKF.nkf("-w -Z1", html)
       if /<body.*?>(.*?)<\/body>/im =~ html
         body = $1
       else
@@ -98,7 +97,7 @@ module Engines
     def execute
       raise Nop, "Not Text" unless text?(@url)
       html = fetch(@url)
-      html = NKF.nkf("-w", html)
+      html = NKF.nkf("-w -Z1 --no-cp932", html)
       title, body = parse(html)
       return "[%s] %s" % [title, body]
     end
