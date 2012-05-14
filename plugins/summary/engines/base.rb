@@ -54,7 +54,7 @@ module Engines
         title = $1.strip
         title.gsub!(%r{<.*?>}m, '')
         title.gsub!(%r{\s+}m, ' ')
-        CGI.unescapeHTML(title)
+        NKF.nkf("-w -Z3 --numchar-input --no-cp932", title)
       else
         ""
       end
@@ -68,7 +68,7 @@ module Engines
       end
       body.gsub!(%r{<!--.*?-->}im, '')
       body.gsub!(%r{<\!\w.*?>}mi, '')
-#      body.gsub!(%r{<head.*?>.*?<\/head>}mi, '')
+      #body.gsub!(%r{<head.*?>.*?<\/head>}mi, '')
       body.gsub!(%r{<head[^>]*>.*?<\/head>}mi, '')
       body.gsub!(%r{<script.*?>.*?<\/script>}mi, '')
       body.gsub!(%r{<style.*?>.*?<\/style>}mi, '')
@@ -85,7 +85,7 @@ module Engines
       elements.each { |item| item.strip! }
       elements.reject! { |item| item.empty? }
       summary = elements.max_by {|e| e.size }
-      return summary ? CGI.unescapeHTML(summary) : ""
+      NKF.nkf("-w -Z3 --numchar-input --no-cp932", summary||"")
     end
 
     def parse(html)
