@@ -17,6 +17,7 @@ require 'watchdog/updater'
 
 class WatchdogPlugin < Ircbot::Plugin
   INTERVAL = 600                # re-fetch urls after this sec
+  COOLTIME = 3600               # wait this sec when changed
 
   def help
     ["#{config.nick}.watchdog.list",
@@ -29,7 +30,7 @@ class WatchdogPlugin < Ircbot::Plugin
     return if @watcher
     bot = self.bot
     Watchdog.connect(Ircbot.root + "db" + "#{config.nick}-watchdog.db")
-    callback = proc{|page| bot.broadcast "Updated: #{page}"; page.done! }
+    callback = proc{|page| bot.broadcast "Updated: #{page}"; page.cooltime!(COOLTIME) }
     updater  = Watchdog::Updater.new(:interval => INTERVAL, :callback => callback)
     @watcher = updater.start
   end

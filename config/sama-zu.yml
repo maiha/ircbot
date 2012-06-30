@@ -4,6 +4,6 @@ nick: sama-zu
 user: samazu
 real: sama~zu
 channels: "#test"
-plugins: irc plugins
+plugins: irc plugins watchdog reminder summary
 multiline: true
 timeout: 500

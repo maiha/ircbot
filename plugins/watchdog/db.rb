@@ -27,7 +27,7 @@ module Watchdog
     property :url       , String                     # 詳細
     property :digest    , String                     # DIGEST値
     property :changed   , Boolean , :default=>false  # 更新済
-    property :changed_at, DateTime                   # changed_at
+    property :start_at  , DateTime                   # 
 
     ######################################################################
     ### Class methods
@@ -37,8 +37,10 @@ module Watchdog
         all(:changed=>true, :order=>[:id])
       end
 
-      def unchanged
-        all(:changed=>false, :order=>[:id])
+      def current
+        all(:changed=>false, :order=>[:id]).select{|p|
+          ! p.start_at or p.start_at.to_time <= Time.now.to_i
+        }
       end
     end
 
@@ -54,7 +56,6 @@ module Watchdog
       self[:changed]    = !! ( self[:changed] || (digest && (digest != hex)) )
       self[:name]       = get_title(utf8)
       self[:digest]     = hex
-      self[:changed_at] = Time.now
       save
       return self[:changed]
     end
@@ -65,6 +66,11 @@ module Watchdog
     def done!
       self[:changed] = false
       save
+    end
+
+    def cooltime!(sec)
+      self[:start_at] = Time.now + sec
+      done!
     end
 
     def to_s

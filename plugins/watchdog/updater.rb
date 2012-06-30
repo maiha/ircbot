@@ -6,7 +6,7 @@ module Watchdog
     interval 600
 
     def srcs
-      Page.unchanged
+      Page.current
     end
 
     def process(page)
