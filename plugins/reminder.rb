@@ -49,9 +49,9 @@ module Reminder
     property :id       , Serial
     property :st       , DateTime                   # 開始日時
     property :en       , DateTime                   # 終了日時
-    property :title    , String                     # 件名
-    property :desc     , String                     # 詳細
-    property :where    , String                     # 場所
+    property :title    , String, :length=>255       # 件名
+    property :desc     , Text                       # 詳細
+    property :where    , String, :length=>255       # 場所
     property :allday   , Boolean , :default=>false  # 終日フラグ
     property :alerted  , Boolean , :default=>false  # お知らせ済
     property :alert_at , DateTime                   # お知らせ日時

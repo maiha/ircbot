@@ -23,9 +23,9 @@ module Watchdog
     include DataMapper::Resource
 
     property :id        , Serial
-    property :name      , String                     # 件名
-    property :url       , String                     # 詳細
-    property :digest    , String                     # DIGEST値
+    property :name      , String, :length=>255       # 件名
+    property :url       , String, :length=>255       # 詳細
+    property :digest    , String, :length=>255       # DIGEST値
     property :changed   , Boolean , :default=>false  # 更新済
     property :start_at  , DateTime                   # 
 
