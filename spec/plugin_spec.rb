@@ -30,6 +30,17 @@ describe Ircbot::Plugin do
   provide :client
   provide :bot
 
+  provide :attrs=
+  provide :[]
+  describe "#[]" do
+    it "should return attrs" do
+      foo = Foo.new
+      foo[:a].should == nil
+      foo.attrs = {:a=>1}
+      foo[:a].should == 1
+    end
+  end
+
   ######################################################################
   ### private methods
 

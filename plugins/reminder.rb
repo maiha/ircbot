@@ -19,9 +19,8 @@ require 'dm-timestamps'
 module Reminder
   REPOSITORY_NAME = :reminder
 
-  def self.connect(path)
-    path.parent.mkpath
-    DataMapper.setup(REPOSITORY_NAME, "sqlite3://#{path}")
+  def self.connect(uri)
+    DataMapper.setup(REPOSITORY_NAME, uri)
     Reminder::Event.auto_upgrade!
   end
 
@@ -138,7 +137,15 @@ class ReminderPlugin < Ircbot::Plugin
   def setup
     return if @watcher
     bot = self.bot
-    Reminder.connect(Ircbot.root + "db" + "#{config.nick}-reminder.db")
+
+    uri = self[:db]
+    unless uri
+      path = Ircbot.root + "db" + "#{config.nick}-reminder.db"
+      uri  = "sqlite3://#{path}"
+      path.parent.mkpath
+    end
+
+    Reminder.connect(uri)
     callback = proc{|event| bot.broadcast event.to_s; event.done!}
     reminder = EventWatcher.new(:interval=>60, :callback=>callback)
     @watcher = Thread.new { reminder.start }

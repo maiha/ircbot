@@ -1,0 +1,19 @@
+host: localhost
+port: 6667
+nick: sama-zu
+user: samazu
+real: sama~zu
+channels: "#test"
+plugins:
+  - irc
+  - plugins
+  -
+    name: watchdog
+    db: "postgres://localhost/ircbot"
+  - 
+    name: reminder
+    db: "postgres://localhost/ircbot"
+  - summary
+reminder
+multiline: true
+timeout: 500

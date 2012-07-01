@@ -112,7 +112,33 @@ Daemons
     05:12 <airi> Mon Apr 09 05:12:22 +0900 2012
     05:12 <maiha> airi.time_signal.stop
     05:12 <airi> Stopped time signal
-                           
+
+
+PluginAttributes
+================
+
+  When you want to give options or attributes to plugins,
+  write it into config.plugins as Array(Hash)
+
+  config/xxx.yml
+    plugins:
+      - irc
+      -
+        name: watchdog
+        db: "postgres://localhost/ircbot"
+
+  This will generate two plugins
+    1. Ircbot::Plugin(name:irc)
+    2. Ircbot::Plugin(name:watchdog, attrs=>{name=>watchdog,db=>postgres...})
+
+  And the given options can be found in plugin by [] method.
+
+    class Watchdog < Ircbot::Plugin
+      def setup
+        db = self[:db]
+        puts "connecting to #{db}"
+        ...
+
 
 Required
 ========

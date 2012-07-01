@@ -29,7 +29,15 @@ class WatchdogPlugin < Ircbot::Plugin
   def setup
     return if @watcher
     bot = self.bot
-    Watchdog.connect(Ircbot.root + "db" + "#{config.nick}-watchdog.db")
+
+    uri = self[:db]
+    unless uri
+      path = Ircbot.root + "db" + "#{config.nick}-watchdog.db"
+      uri  = "sqlite3://#{path}"
+      path.parent.mkpath
+    end
+
+    Watchdog.connect(uri)
     callback = proc{|page| bot.broadcast "Updated: #{page}"; page.cooltime!(COOLTIME) }
     updater  = Watchdog::Updater.new(:interval => INTERVAL, :callback => callback)
     @watcher = updater.start

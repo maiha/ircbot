@@ -28,6 +28,7 @@ module Ircbot
       @plugins = plugins || Plugins.new
       @message = InitialMessage.new(self.class.name)
       @running = false
+      @attrs   = Mash.new
     end
 
     def setup
@@ -39,6 +40,10 @@ module Ircbot
     delegate :plugin!, :client, :bot, :config, :to=>"@plugins"
     delegate :debug, :to=>"@plugins"
 
+    def [](key)
+      @attrs[key]
+    end
+
     def plugin_name
       @plugin_name ||= Extlib::Inflection.foreign_key(self.class.name).sub(/(_plugin)?_id$/,'')
     end
@@ -49,6 +54,10 @@ module Ircbot
 
     def to_s
       "%s%s" % [running ? '*' : '', plugin_name]
+    end
+
+    def attrs=(hash)
+      @attrs = Mash.new(hash)
     end
 
     ######################################################################

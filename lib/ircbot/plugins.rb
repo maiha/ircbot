@@ -11,6 +11,7 @@ module Ircbot
     def initialize(client = nil, plugins = nil)
       @client  = client  || Client::Standalone.new
       @plugins = Dictionary.new
+      @cache   = {}
 
       load Array(plugins)
     end
@@ -118,11 +119,19 @@ module Ircbot
           raise ArgumentError, "#{plugin} is not Ircbot::Plugin"
         end
       when String, Symbol
+        self << {"name" => plugin.to_s}
+      when Hash
         begin
-          name = plugin.to_s
-          self << eval_plugin(name)
+          attrs = Mash.new(plugin)
+          name  = attrs["name"]
+          if name.blank?
+            raise "no names: #{attrs.inspect}"
+          end
+          plugin = eval_plugin(name)
+          plugin.attrs = attrs
+          self << plugin
         rescue Exception => e
-          broadcast "Plugin error(#{name}): #{e}[#{e.class}]"
+          invalid_plugin_found "Plugin error(#{name}): #{e}[#{e.class}]"
         end
       else
         raise NotImplementedError, "#<< for #{plugin.class}"
@@ -155,6 +164,10 @@ module Ircbot
 
     def inspect
       plugins.values.inspect
+    end
+
+    def invalid_plugin_found(text)
+      broadcast text
     end
 
     private

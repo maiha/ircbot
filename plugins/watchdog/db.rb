@@ -8,9 +8,8 @@ require 'nkf'
 module Watchdog
   REPOSITORY_NAME = :watchdog
 
-  def self.connect(path)
-    path.parent.mkpath
-    DataMapper.setup(REPOSITORY_NAME, "sqlite3://#{path}")
+  def self.connect(uri)
+    DataMapper.setup(REPOSITORY_NAME, uri)
     Watchdog::Page.auto_upgrade!
   end
 
