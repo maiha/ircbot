@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-timestamps'
@@ -39,7 +40,7 @@ module Watchdog
 
       def current
         all(:changed=>false, :order=>[:id]).select{|p|
-          ! p.start_at or p.start_at.to_time <= Time.now.to_i
+          ! p.start_at or p.start_at.to_time <= Time.now
         }
       end
     end
