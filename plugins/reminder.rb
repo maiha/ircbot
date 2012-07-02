@@ -52,6 +52,7 @@ module Reminder
     property :title    , String, :length=>255       # 件名
     property :desc     , Text                       # 詳細
     property :where    , String, :length=>255       # 場所
+    property :source   , String, :length=>255       # 情報ソース
     property :allday   , Boolean , :default=>false  # 終日フラグ
     property :alerted  , Boolean , :default=>false  # お知らせ済
     property :alert_at , DateTime                   # お知らせ日時
