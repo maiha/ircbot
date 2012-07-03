@@ -94,13 +94,13 @@ module Reminder
       # => {:zone=>"-14:55", :year=>2010, :hour=>13, :min=>30, :mday=>4, :offset=>-53700, :mon=>1}
 
       if t[:year] && t[:mon] && t[:mday] && t[:hour]
-        event.st = Time.mktime(t[:year], t[:mon], t[:mday], t[:hour], t[:min], t[:sec])
+        event.st = NightTime.mktime(t[:year], t[:mon], t[:mday], t[:hour], t[:min], t[:sec])
         if t[:zone].to_s =~ /^-?(\d+):(\d+)(:(\d+))?$/
-          event.en = Time.mktime(t[:year], t[:mon], t[:mday], $1, $2, $4)
+          event.en = NightTime.mktime(t[:year], t[:mon], t[:mday], $1, $2, $4)
         end
       else
         event.allday = true
-        event.st     = Time.mktime(t[:year], t[:mon], t[:mday]) rescue nil
+        event.st     = NightTime.mktime(t[:year], t[:mon], t[:mday]) rescue nil
       end
 
       return event

@@ -23,7 +23,11 @@ Config
 Usage
 =====
 
-  ircbot -f config/xxx.yml
+  (installed gem)
+  % ircbot -f config/xxx.yml
+
+  (in source dir)
+  % ruby -Ku -rubygems -Ilib bin/ircbot -f config/xxx.yml
 
 
 Plugin
@@ -44,6 +48,14 @@ Plugin
     * message : message object same as 3rd argument
     * direct? : whether the message is directly toward to the bot or not
     * config  : hash of given config file
+
+
+Setup
+=====
+
+  Install gems via bundler like this.
+
+    % bundle install --path vendor
 
 
 Example
