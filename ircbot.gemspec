@@ -22,6 +22,19 @@ Gem::Specification.new do |s|
   s.add_dependency "dsl_accessor", ">= 0.4.0"
   s.add_dependency "extlib", ">= 0.9.14"
   s.add_dependency "net-irc", ">= 0.0.9"
+  s.add_dependency 'chawan'
+  s.add_dependency 'night-time'
+
+  s.add_dependency 'pg'
+  s.add_dependency 'sqlite3'
+
+  s.add_dependency 'dm-core'
+  s.add_dependency 'dm-migrations'
+  s.add_dependency 'dm-timestamps'
+  s.add_dependency 'do_sqlite3'
+  s.add_dependency 'data_objects'
+  s.add_dependency 'dm-sqlite-adapter'
+  s.add_dependency 'dm-postgres-adapter'
 
   s.add_development_dependency "rspec", ">= 2.9.0"
 end
