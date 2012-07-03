@@ -1,15 +1,8 @@
 #!/usr/bin/env ruby -Ku
 # -*- coding: utf-8 -*-
 
-######################################################################
-# [Install]
-#
-# gem install chawan night-time dm-core dm-migrations dm-timestamps do_sqlite3 data_objects dm-sqlite-adapter -V
-#
-
 require 'rubygems'
 require 'ircbot'
-require 'chawan'
 require 'night-time'
 
 require 'dm-core'
@@ -28,12 +21,13 @@ module Reminder
   ### Exceptions
 
   class EventNotFound < RuntimeError; end
-  class EventNotSaved < RuntimeError
+  class EventFound    < RuntimeError
     attr_accessor :event
     def initialize(event)
       @event = event
     end
   end
+  class EventNotSaved < EventFound   ; end
   class EventHasDone  < EventNotSaved; end
   class StartNotFound < EventNotSaved; end
 
@@ -83,33 +77,35 @@ module Reminder
     end
   end
 
-  module TimeParser
-    def parse(text)
+  def self.parse!(text)
+    case text
+    when /^\s*>>/
+      # 引用は無視
+      raise EventNotFound
+
+    else
+      # 先頭40bytesに時刻ぽい文字列があれば登録とみなす
+      jst    = NightTime::Jst.new(text[0,40])
+      array  = jst.parse
+
+      # 日付なし
+      array[1] && array[2] or raise EventNotFound
+
       event = Event.new
       event.desc   = text
       event.title  = text.sub(%r{^[\s\d:-]+}, '')
-      event.allday = false
-
-      t = Date._parse(text)
-      # => {:zone=>"-14:55", :year=>2010, :hour=>13, :min=>30, :mday=>4, :offset=>-53700, :mon=>1}
-
-      if t[:year] && t[:mon] && t[:mday] && t[:hour]
-        event.st = Time.mktime(t[:year], t[:mon], t[:mday], t[:hour], t[:min], t[:sec])
-        if t[:zone].to_s =~ /^-?(\d+):(\d+)(:(\d+))?$/
-          event.en = Time.mktime(t[:year], t[:mon], t[:mday], $1, $2, $4)
-        end
-      else
-        event.allday = true
-        event.st     = Time.mktime(t[:year], t[:mon], t[:mday]) rescue nil
-      end
+      event.allday = array[3].nil?
+      event.st     = jst.time
 
       return event
     end
+  end
 
-    def register(text)
-      event = parse(text)
+  module Registable
+    def register(event)
       event.st or raise StartNotFound, event
       if event.st.to_time > Time.now
+        event.source   = "irc/reminder"
         event.alert_at = Time.at(event.st.to_time.to_i - 30*60)
         event.save or raise EventNotSaved, event
         return event
@@ -119,7 +115,7 @@ module Reminder
     end
   end
 
-  extend TimeParser
+  extend Registable
 end
 
 
@@ -166,14 +162,11 @@ class ReminderPlugin < Ircbot::Plugin
   def reply(text)
     # strip noise
     text = text.sub(/^<.*?>/,'').strip
-
-    case text
-    when %r{^\d{4}.?\d{1,2}.?\d{1,2}}
-      event = Reminder.register(text)
-      text  = "Remind you again at %s" % event.alert_at.strftime("%Y-%m-%d %H:%M")
-      return text
-    end
-    return nil
+   
+    event = Reminder.parse!(text)
+    Reminder.register(event)
+    text  = "Remind you again at %s" % event.alert_at.strftime("%Y-%m-%d %H:%M")
+    return text
 
   rescue Reminder::EventNotFound
     return nil
@@ -188,91 +181,3 @@ class ReminderPlugin < Ircbot::Plugin
   end
 end
 
-
-######################################################################
-### Spec in file:
-###   ruby plugins/reminder.rb
-
-if $0 == __FILE__
-
-  def spec(src, buffer, &block)
-    buffer = "require '#{Pathname(src).expand_path}'\n" + buffer
-    tmp = Tempfile.new("dynamic-spec")
-    tmp.print(buffer)
-    tmp.close
-    block.call(tmp)
-  ensure
-    tmp.close(true)
-  end
-
-  spec($0, DATA.read{}) do |tmp|
-    system("rspec -cfs #{tmp.path}")
-  end
-end
-
-__END__
-
-require 'rspec'
-require 'ostruct'
-
-module RSpec
-  module Core
-    module SharedExampleGroup
-      def parse(text, &block)
-        describe "(#{text})" do
-          subject {
-            event = Reminder.parse(text)
-            hash  = {
-              :st     => (event.st.strftime("%Y-%m-%d %H:%M:%S") rescue nil),
-              :en     => (event.en.strftime("%Y-%m-%d %H:%M:%S") rescue nil),
-              :title  => event.title.to_s,
-              :desc   => event.title.to_s,
-              :allday => event.allday,
-            }
-            OpenStruct.new(hash)
-          }
-          instance_eval(&block)
-        end
-      end
-    end
-  end
-end
-
-describe "Reminder#parse" do
-
-  parse '' do
-    its(:st)     { should == nil }
-  end
-
-  parse '1366x768 WXGA' do
-    its(:st)     { should == nil }
-  end
-
-  parse '2010-01-04 CX' do
-    its(:st)     { should == "2010-01-04 00:00:00" }
-    its(:en)     { should == nil }
-    its(:title)  { should == "CX" }
-    its(:allday) { should == true }
-  end
-
-  parse '2010-01-04 13:30 CX' do
-    its(:st)     { should == "2010-01-04 13:30:00" }
-    its(:en)     { should == nil }
-    its(:title)  { should == "CX" }
-    its(:allday) { should == false }
-  end
-
-  parse '2010-01-04 13:30-14:55 CX' do
-    its(:st)     { should == "2010-01-04 13:30:00" }
-    its(:en)     { should == "2010-01-04 14:55:00" }
-    its(:title)  { should == "CX" }
-    its(:allday) { should == false }
-  end
-
-  parse '2010-01-18 27:15-27:45 TX' do
-    its(:st)     { should == "2010-01-19 03:15:00" }
-    its(:en)     { should == "2010-01-19 03:45:00" }
-    its(:title)  { should == "TX" }
-    its(:allday) { should == false }
-  end
-end
