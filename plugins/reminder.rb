@@ -126,11 +126,6 @@ class ReminderPlugin < Ircbot::Plugin
     end
   end
 
-  def help
-    ["list -> show future reminders",
-     "YYYY-mm-dd or YYYY-mm-dd HH:MM text -> register the text"].join("\n")
-  end
-
   def setup
     return if @watcher
     bot = self.bot

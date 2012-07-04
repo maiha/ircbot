@@ -20,8 +20,11 @@ module Ircbot
     attr_accessor :plugin_name
 
     def self.command?(name)
-      @commands ||= (public_instance_methods - Plugin.public_instance_methods).inject({"setup"=>1, "help"=>1}) {|h,k| h[k.to_s] = 1; h }
-      !! @commands[name.to_s]
+      !! commands[name.to_s]
+    end
+
+    def self.commands
+      @commands ||= (public_instance_methods - Plugin.public_instance_methods + %w(help) - %w(reply)).inject({}) {|h,k| h[k.to_s] = 1; h }
     end
 
     def initialize(plugins = nil)
@@ -68,7 +71,7 @@ module Ircbot
     end
 
     def help
-      raise "no helps for #{plugin_name}"
+      self[:help] || "commands: %s" % self.class.commands.keys.sort.join(",")
     end
 
     ######################################################################
