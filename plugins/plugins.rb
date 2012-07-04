@@ -34,7 +34,7 @@ commands: load, start, stop, delete
 
       when "help"
         if arg.empty?
-          done [bot_help, plugins_help].join("\n")
+          done [config_help, plugins_help, bot_help].compact.join("\n")
         else
           done plugins[arg].help
         end
@@ -49,8 +49,11 @@ commands: load, start, stop, delete
     end
 
     def bot_help
-      config.help ||
-        "%s bot [%s (ver:%s)]" % [config.nick, Ircbot::HOMEPAGE, Ircbot::VERSION]
+      "%s bot [%s (ver:%s)]" % [config.nick, Ircbot::HOMEPAGE, Ircbot::VERSION]
+    end
+
+    def config_help
+      config.help
     end
 end
 

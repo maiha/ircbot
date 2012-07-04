@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ircbot (0.1.5)
+    ircbot (0.2.0)
       chawan
       data_objects
       dm-core
@@ -50,7 +50,7 @@ GEM
       optionize (>= 0.1.0)
     extlib (0.9.15)
     net-irc (0.0.9)
-    night-time (1.0.1)
+    night-time (1.0.2)
     optionize (0.1.1)
     pg (0.14.0)
     rspec (2.10.0)
