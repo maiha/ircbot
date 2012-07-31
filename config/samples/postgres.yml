@@ -13,6 +13,7 @@ plugins:
   - 
     name: reminder
     db: "postgres://localhost/ircbot"
+    accept_fmt: "Remind you again at %s"
   -
     name: summary
     engines: http, https, ch2, twitter
