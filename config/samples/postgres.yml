@@ -13,7 +13,9 @@ plugins:
   - 
     name: reminder
     db: "postgres://localhost/ircbot"
-  - summary
+  -
+    name: summary
+    engines: http, https, ch2, twitter
 reminder
 multiline: true
 timeout: 500

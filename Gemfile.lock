@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ircbot (0.2.0)
+    ircbot (0.2.1)
       chawan
       data_objects
       dm-core
