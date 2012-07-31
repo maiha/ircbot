@@ -120,6 +120,8 @@ end
 
 
 class ReminderPlugin < Ircbot::Plugin
+  DEFAULT_REMIND_MSG = "Remind you again at %s"
+
   class EventWatcher < Ircbot::Utils::Watcher
     def srcs
       Reminder::Event.alerts
@@ -160,8 +162,8 @@ class ReminderPlugin < Ircbot::Plugin
    
     event = Reminder.parse!(text)
     Reminder.register(event)
-    text  = "Remind you again at %s" % event.alert_at.strftime("%Y-%m-%d %H:%M")
-    return text
+
+    return accepted_message(event)
 
   rescue Reminder::EventNotFound
     return nil
@@ -174,5 +176,17 @@ class ReminderPlugin < Ircbot::Plugin
     puts "Reminder ignores past event: #{e.event.st}"
     return nil
   end
+
+  private
+    def accepted_message(event)
+      fmt  = self[:accept_fmt] || DEFAULT_REMIND_MSG
+      text = fmt % event.alert_at.strftime("%Y-%m-%d %H:%M")
+
+      if text.blank?
+        return nil
+      else
+        return text
+      end
+    end
 end
 
