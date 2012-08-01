@@ -23,7 +23,7 @@ module Engines
     end
 
     def text?(url)
-      head(url).to_s =~ %r{^Content-Type:.*text/}
+      head(url).to_s =~ %r{^Content-Type:.*text/}i
     end
 
     def fetch(url)
