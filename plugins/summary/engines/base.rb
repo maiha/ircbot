@@ -97,7 +97,7 @@ module Engines
     def execute
       raise Nop, "Not Text" unless text?(@url)
       html = fetch(@url)
-      html = NKF.nkf("-w -Z1 --no-cp932", html)
+      html = NKF.nkf("-w -Z1 --numchar-input --no-cp932", html)
       title, body = parse(html)
       return "[%s] %s" % [title, body]
     end
