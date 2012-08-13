@@ -18,7 +18,11 @@ module Engines
       # Content-Length: 245091
       # Server: GSE
 
-      curl_options = ["--head", "--location", "--user-agent", "Mozilla"]
+      curl_options = [
+                      "--head", "--location",
+                      "--user-agent", "Mozilla",
+                      "--max-time", "30",
+                     ]
       Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e| o.read }
     end
 
@@ -30,6 +34,7 @@ module Engines
       curl_options = [
                       "--location", "--compressed",
                       "--user-agent", "Mozilla",
+                      "--max-time", "30",
                       "--max-filesize", "%d" % MaxContentLength,
                      ]
       Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e| o.read }
