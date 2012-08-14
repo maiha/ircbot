@@ -84,6 +84,7 @@ Advanced
     class APlugin < Ircbot::Plugin
       def reply(text)
         throw :done, "This is A"
+        # or simply use "done(text)" method
       end
     end
 

@@ -15,15 +15,23 @@ module Ircbot
     ######################################################################
     ### Events
 
-    event(:privmsg) {|m|
-      text = decode(m.params[1].to_s)
-      args = [text, m.prefix.nick, m]
-
-      plugins_call_command(args, m)
-      plugins_call_replies(args, m)
-    }
+    event(:privmsg) {|m| process_privmsg(m) }
 
     private
+      def process_privmsg(m)
+        parallel {
+          text = decode(m.params[1].to_s)
+          args = [text, m.prefix.nick, m]
+
+          got = catch(:done) do
+            plugins_call_command(args, m)
+            plugins_call_replies(args, m)
+            nil                     # set got = nil
+          end
+          m.reply(self, got) if got
+        }
+      end
+
       def plugins_call_command(args, m)
         case m.message.to_s          # text
         when /^#{config.nick}\.(#{plugins.active_names.join('|')})\./
@@ -37,13 +45,10 @@ module Ircbot
       end
 
       def plugins_call_replies(args, m)
-        text = catch(:done) do
-          plugins.active.each do |plugin|
-            plugins_call_action(:reply, plugin, args, m, :reply=>true)
-          end
-          return true
+        plugins.active.each do |plugin|
+          plugins_call_action(:reply, plugin, args, m, :reply=>true)
         end
-        m.reply(self, text) if text
+        return true
       end
 
       def plugins_call_logs(args)        

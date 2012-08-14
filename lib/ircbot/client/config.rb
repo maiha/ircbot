@@ -48,20 +48,6 @@ module Ircbot
       new(Config.read(path))
     end
 
-    def initialize(hash)
-      super(hash[:host], hash[:port], hash)
-      @config = Config.new(hash)
-    end
-
-    def trim(text, size = 120)
-      a = text.to_s.split(//)
-      if a.size > size
-        return a[0..size].join + "..."
-      else
-        return text.to_s
-      end
-    end
-
     attr_reader :config
   end
 end
