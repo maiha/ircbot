@@ -13,7 +13,7 @@ class Net::IRC::Message
   def reply(client, text)
     to = (client.config.nick == params[0]) ? prefix.nick : params[0]
     unless text.to_s.empty?
-      text = client.trim(text)
+      text = client.normalize_message_text(text)
       client.privmsg to, text
     end
   end
