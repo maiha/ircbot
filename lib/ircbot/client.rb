@@ -8,6 +8,7 @@ require "ircbot/plugins"
 
 require "ircbot/client/core"
 require "ircbot/client/standalone"
+require "ircbot/client/helper"
 require "ircbot/client/eventable"
 require "ircbot/client/logger"
 require "ircbot/client/encoding"
