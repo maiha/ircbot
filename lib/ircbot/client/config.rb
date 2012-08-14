@@ -48,11 +48,6 @@ module Ircbot
       new(Config.read(path))
     end
 
-    def initialize(hash)
-      super(hash[:host], hash[:port], hash)
-      @config = Config.new(hash)
-    end
-
     attr_reader :config
   end
 end
