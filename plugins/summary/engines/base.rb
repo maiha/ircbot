@@ -7,8 +7,24 @@ module Engines
 
     MaxContentLength = 512 * 1024
 
-    def initialize(url)
+    def initialize(url, config)
       @url = url
+      @config = config
+    end
+
+    def build_curl_options(options)
+      options = options.dup
+      if curl_option = @config[:curl_option]
+        for key, value in curl_option
+          case value
+          when TrueClass
+            options << "--#{key}"
+          else
+            options << "--#{key}" << value
+          end
+        end
+      end
+      options
     end
 
     def head(url)
@@ -18,11 +34,11 @@ module Engines
       # Content-Length: 245091
       # Server: GSE
 
-      curl_options = [
-                      "--head", "--location",
-                      "--user-agent", "Mozilla",
-                      "--max-time", "30",
-                     ]
+      curl_options = build_curl_options [
+                                         "--head", "--location",
+                                         "--user-agent", "Mozilla",
+                                         "--max-time", "30",
+                                        ]
       Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e| o.read }
     end
 
@@ -31,12 +47,12 @@ module Engines
     end
 
     def fetch(url)
-      curl_options = [
-                      "--location", "--compressed",
-                      "--user-agent", "Mozilla",
-                      "--max-time", "30",
-                      "--max-filesize", "%d" % MaxContentLength,
-                     ]
+      curl_options = build_curl_options [
+                                         "--location", "--compressed",
+                                         "--user-agent", "Mozilla",
+                                         "--max-time", "30",
+                                         "--max-filesize", "%d" % MaxContentLength,
+                                        ]
       Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e| o.read }
     end
 
