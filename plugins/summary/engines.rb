@@ -11,7 +11,7 @@ module Engines
 
   def self.create(url)
     for pattern, klass in Mapping
-      return klass.new(url) if pattern =~ url
+      return klass.new(url, @engine_config) if pattern =~ url
     end
     raise NotImplementedError, "[BUG] Not supported URL: %s" % url
   end
@@ -23,7 +23,8 @@ module Engines
     instance_eval(Extlib::Inflection.camelize(name))
   end
 
-  def self.setup(*names)
+  def self.setup(names, engine_config)
+    @engine_config = engine_config
     Mapping.clear
     names = (%w( none ) + names).flatten.uniq
     debug "[Summary] Engines.setup(%s)" % names.inspect

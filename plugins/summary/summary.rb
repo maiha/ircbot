@@ -30,7 +30,10 @@ class SummaryPlugin < Ircbot::Plugin
     engines = self[:engines]
     engines = engines.to_s.split(/\s*[,\s]\s*/).compact unless engines.is_a?(Array)
     engines = DEFAULT_ENGINES if engines.blank?
-    Engines.setup(engines)
+    engine_config = {
+      :curl_option => self[:curl_option],
+    }
+    Engines.setup(engines, engine_config)
   end
 
   def reply(text)
