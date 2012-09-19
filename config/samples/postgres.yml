@@ -17,6 +17,9 @@ plugins:
   -
     name: summary
     engines: http, https, ch2, twitter
+    curl_option:
+      netrc: true
+      anyauth: true
 reminder
 multiline: true
 timeout: 500
