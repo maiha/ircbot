@@ -2,7 +2,7 @@ module Engines
   class Twitter < Base
     url %r{twitter\.com}
 
-    def initialize(url)
+    def initialize(url, config)
       super
       @url = normalize_url(@url)
     end
