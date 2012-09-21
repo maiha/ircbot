@@ -23,10 +23,13 @@ module Engines
     instance_eval(Extlib::Inflection.camelize(name))
   end
 
-  def self.setup(names, engine_config)
-    @engine_config = engine_config
+  def self.setup(names = [], engine_config = nil)
+    @engine_config = engine_config || {}
+    unless @engine_config.is_a?(Hash)
+      raise ArgumentError, "Engines.setup expects Hash as config, but got %s" % [@engine_config.class]
+    end
     Mapping.clear
-    names = (%w( none ) + names).flatten.uniq
+    names = (%w( none ) + [names]).flatten.uniq
     debug "[Summary] Engines.setup(%s)" % names.inspect
     names.each do |name|
       klass = self[name]
