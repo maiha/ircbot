@@ -1,6 +1,5 @@
 
 require 'rspec'
-require 'rr'
 
 require File.join(File.dirname(__FILE__), '/../lib/ircbot')
 #require File.join(File.dirname(__FILE__), '/its_helper')

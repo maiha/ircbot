@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'data_objects'
   s.add_dependency 'dm-sqlite-adapter'
   s.add_dependency 'dm-postgres-adapter'
+  s.add_dependency 'dm-postgres-adapter'
 
   s.add_development_dependency "rspec", ">= 2.9.0"
 end
