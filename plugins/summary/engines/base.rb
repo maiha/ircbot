@@ -7,7 +7,7 @@ module Engines
 
     MaxContentLength = 512 * 1024
 
-    def initialize(url, config)
+    def initialize(url, config = {})
       @url = url
       @config = config
     end
