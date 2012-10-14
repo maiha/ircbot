@@ -71,7 +71,7 @@ module Engines
     end
 
     def get_title(html)
-      if %r{<title>(.*?)</title>}mi =~ html
+      if %r{<title[^>]*>(.*?)</title>}mi =~ html
         title = $1.strip
         title.gsub!(%r{<.*?>}m, '')
         title.gsub!(%r{\s+}m, ' ')
