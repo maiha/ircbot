@@ -38,12 +38,20 @@ module Engines
                                          "--head", "--location",
                                          "--user-agent", "Mozilla",
                                          "--max-time", "30",
+                                         "--silent", "--show-error",
                                         ]
-      Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e| o.read }
+      Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e|
+        [o.read, e.read]
+      }
     end
 
-    def text?(url)
-      head(url).to_s =~ %r{^Content-Type:.*text/}i
+    def summarizable?(header)
+      if header =~ %r{^Content-Length:\s*(\d+)}i
+        if $1.to_i > MaxContentLength
+          raise Nop, "Exceed MaxContentLength: #{$1.to_i} bytes"
+        end
+      end
+      header =~ %r{^Content-Type:.*text/}i
     end
 
     def fetch(url)
@@ -52,8 +60,24 @@ module Engines
                                          "--user-agent", "Mozilla",
                                          "--max-time", "30",
                                          "--max-filesize", "%d" % MaxContentLength,
+                                         "--silent", "--show-error",
                                         ]
-      Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e| o.read }
+      Open3.popen3(*["curl", curl_options, url].flatten) {|i,o,e|
+        [o.read, e.read]
+      }
+    end
+
+    def preprocess_content(content, header)
+      NKF.nkf("-w -Z1 --numchar-input --no-cp932", content)
+    end
+
+    def pdftohtml(content)
+      pdftotext_options = ["-enc", "UTF-8", "-q", "-htmlmeta", "-", "-"]
+      Open3.popen3(*["pdftotext", pdftotext_options].flatten) {|i,o,e|
+        i.write(content)
+        i.close
+        o.read
+      }
     end
 
     def trim_tags(html)
@@ -116,9 +140,12 @@ module Engines
     end
 
     def execute
-      raise Nop, "Not Text" unless text?(@url)
-      html = fetch(@url)
-      html = NKF.nkf("-w -Z1 --numchar-input --no-cp932", html)
+      header, error = head(@url)
+      raise Nop, "Failed to head: #{error}" if header.empty?
+      raise Nop, "Not Text" unless summarizable?(header)
+      content, error = fetch(@url)
+      raise Nop, "Failed to fetch: #{error}" if content.empty?
+      html = preprocess_content(content, header)
       title, body = parse(html)
       return "[%s] %s" % [title, body]
     end
