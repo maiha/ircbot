@@ -51,7 +51,6 @@ module Engines
           raise Nop, "Exceed MaxContentLength: #{$1.to_i} bytes"
         end
       end
-      #header =~ %r{^Content-Type:.*(?:text/|application/pdf)}i
       header =~ %r{^Content-Type:.*text/}i
     end
 
@@ -69,12 +68,7 @@ module Engines
     end
 
     def preprocess_content(content, header)
-      case header
-      when %r{^Content-Type:.*application/pdf}i
-        pdftohtml(content)
-      else # CT: text/*
-        NKF.nkf("-w -Z1 --numchar-input --no-cp932", content)
-      end
+      NKF.nkf("-w -Z1 --numchar-input --no-cp932", content)
     end
 
     def pdftohtml(content)
