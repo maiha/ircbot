@@ -67,6 +67,10 @@ module Engines
       }
     end
 
+    def preprocess_content(content, header)
+      NKF.nkf("-w -Z1 --numchar-input --no-cp932", content)
+    end
+
     def trim_tags(html)
       html.gsub!(%r{<head[^>]*>.*?</head>}mi, '')
       html.gsub!(%r{<script.*?>.*?</script>}mi, '')
@@ -130,9 +134,9 @@ module Engines
       header, error = head(@url)
       raise Nop, "Failed to head: #{error}" if header.empty?
       raise Nop, "Not Text" unless summarizable?(header)
-      html, error = fetch(@url)
-      raise Nop, "Failed to fetch: #{error}" if html.empty?
-      html = NKF.nkf("-w -Z1 --numchar-input --no-cp932", html)
+      content, error = fetch(@url)
+      raise Nop, "Failed to fetch: #{error}" if content.empty?
+      html = preprocess_content(content, header)
       title, body = parse(html)
       return "[%s] %s" % [title, body]
     end
