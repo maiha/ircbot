@@ -136,7 +136,7 @@ module Engines
     def parse(html)
       title = get_title(html)
       body = get_body(html)
-      return title, body
+      return CGI.unescapeHTML(title), CGI.unescapeHTML(body)
     end
 
     def execute
