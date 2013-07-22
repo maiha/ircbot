@@ -59,7 +59,7 @@ class SummaryPlugin < Ircbot::Plugin
 
     def once(key, &block)
       @once ||= {}
-      raise Engines::Nop if @once.has_key?(key)
+      raise Engines::Nop, "Previously summarized" if @once.has_key?(key)
       return block.call
     ensure
       @once[key] = 1

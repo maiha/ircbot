@@ -3,7 +3,7 @@ module Engines
     url %r{}
 
     def execute
-      raise Nop
+      raise Nop, "None"
     end
   end
 end
