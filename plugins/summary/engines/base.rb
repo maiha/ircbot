@@ -109,7 +109,8 @@ module Engines
       if /<body.*?>(.*?)<\/body>/im =~ html
         body = $1
       else
-        raise Nop, "No Body Found"
+        #raise Nop, "No Body Found"
+        body = html
       end
       body.gsub!(%r{<!--.*?-->}im, '')
       body.gsub!(%r{<\!\w.*?>}mi, '')
