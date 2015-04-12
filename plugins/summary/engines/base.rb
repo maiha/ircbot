@@ -68,7 +68,7 @@ module Engines
     end
 
     def preprocess_content(content, header)
-      NKF.nkf("-w -Z1 --numchar-input --no-cp932", content)
+      NKF.nkf("-w --numchar-input --no-cp932", content)
     end
 
     def pdftohtml(content)
@@ -99,7 +99,7 @@ module Engines
         title = $1.strip
         title.gsub!(%r{<.*?>}m, '')
         title.gsub!(%r{\s+}m, ' ')
-        NKF.nkf("-w -Z3 --numchar-input --no-cp932", title)
+        NKF.nkf("-w -Z1 --numchar-input --no-cp932", title)
       else
         ""
       end
@@ -131,7 +131,7 @@ module Engines
       elements.each { |item| item.strip! }
       elements.reject! { |item| item.empty? }
       summary = elements.max_by {|e| e.size }
-      NKF.nkf("-w -Z3 --numchar-input --no-cp932", summary||"")
+      NKF.nkf("-w -Z1 --numchar-input --no-cp932", summary||"")
     end
 
     def parse(html)
